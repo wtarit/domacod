@@ -24,14 +24,18 @@ class _ImageViewState extends State<ImageView> {
             future: widget.asset.file,
             builder: (_, snapshot) {
               final file = snapshot.data;
-              if (file == null) return Container();
+              if (file == null) {
+                return Container();
+              }
               return Image.file(file);
             },
           ),
-          Text(getAbsolutePath(
-            widget.asset.relativePath,
-            widget.asset.title,
-          )),
+          Text(
+            getAbsolutePath(
+              widget.asset.relativePath,
+              widget.asset.title,
+            ),
+          ),
         ],
       ),
     );

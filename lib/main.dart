@@ -1,4 +1,5 @@
 import 'package:domacod/grid_image_view.dart';
+import 'package:domacod/home_page.dart';
 import 'package:flutter/material.dart';
 import 'package:photo_manager/photo_manager.dart';
 import 'objectbox.dart';
@@ -210,6 +211,12 @@ class _HomePageState extends State<HomePage> {
       body: Column(
         children: <Widget>[
           Text('There are ${assets.length} assets'),
+          ElevatedButton(
+              onPressed: () {
+                Navigator.push(context,
+                    MaterialPageRoute(builder: (context) => const MainPage()));
+              },
+              child: const Text("Push to home")),
           ElevatedButton(onPressed: addDB, child: const Text("addDB")),
           ElevatedButton(onPressed: printDB, child: const Text("printDB")),
           ElevatedButton(
