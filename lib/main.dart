@@ -1,5 +1,7 @@
 import 'package:domacod/grid_image_view.dart';
 import 'package:domacod/home_page.dart';
+import 'package:domacod/tflite/recognition.dart';
+import 'package:domacod/utils/path_utils.dart';
 import 'package:flutter/material.dart';
 import 'package:photo_manager/photo_manager.dart';
 import 'objectbox.dart';
@@ -81,13 +83,13 @@ class _HomePageState extends State<HomePage> {
     }
   }
 
-  void doSomething() {
+  void printPath() {
+    int index = 3;
     if (assets.isNotEmpty) {
-      String? relpath = assets[0].relativePath;
-      String? fname = assets[0].title;
+      String? relpath = assets[index].relativePath;
+      String? fname = assets[index].title;
 
-      String path = p.join("", relpath, fname);
-      print(p.isAbsolute(path));
+      String path = getAbsolutePath(relpath, fname);
       print(path);
     } else {
       print("No image to index");
@@ -95,7 +97,7 @@ class _HomePageState extends State<HomePage> {
   }
 
   /// Runs inference in another isolate
-  Future<Map<String, dynamic>> inference(String filepath) async {
+  Future<List<String>> inference(String filepath) async {
     IsolateData isolateData = IsolateData(
       filepath,
       classifier.interpreter.address,
@@ -106,7 +108,11 @@ class _HomePageState extends State<HomePage> {
         .send(isolateData..responsePort = responsePort.sendPort);
     var results = await responsePort.first;
     print(results);
-    return results;
+    List<String> output_category = [];
+    for (Recognition recognition in results["recognitions"]) {
+      output_category.add(recognition.label);
+    }
+    return output_category.take(5).toList();
   }
 
   void addDB() async {
@@ -122,13 +128,7 @@ class _HomePageState extends State<HomePage> {
     for (AssetEntity asset in assets) {
       String? relpath = asset.relativePath;
       String? fname = asset.title;
-      String path = "";
-      if (relpath != null && fname != null) {
-        path = p.join(relpath, fname);
-        if (!p.isAbsolute(path)) {
-          path = p.join("/storage/emulated/0/", path);
-        }
-      }
+      String path = getAbsolutePath(relpath, fname);
       newPaths.add(path);
     }
 
@@ -143,7 +143,7 @@ class _HomePageState extends State<HomePage> {
     for (int i = 0; i < newPaths.length; i++) {
       if (!dbPaths.contains(newPaths[i])) {
         // TODO: Add inferencing code
-        await inference(newPaths[i]);
+        print(await inference(newPaths[i]));
         setState(() {
           processed++;
         });
@@ -163,7 +163,10 @@ class _HomePageState extends State<HomePage> {
     assetBox.removeAll();
   }
 
-  void inferone() {}
+  void inferone() async {
+    print(
+        await inference("/storage/emulated/0/DCIM/Camera/563000012763501.jpg"));
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -219,8 +222,7 @@ class _HomePageState extends State<HomePage> {
               child: const Text("Push to home")),
           ElevatedButton(onPressed: addDB, child: const Text("addDB")),
           ElevatedButton(onPressed: printDB, child: const Text("printDB")),
-          ElevatedButton(
-              onPressed: doSomething, child: const Text("print path")),
+          ElevatedButton(onPressed: printPath, child: const Text("print path")),
           ElevatedButton(onPressed: deleteDB, child: const Text("deleteDB")),
           ElevatedButton(onPressed: inferone, child: const Text("inferone")),
           ElevatedButton(
