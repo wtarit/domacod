@@ -30,7 +30,9 @@ class AssetThumbnail extends StatelessWidget {
               Navigator.push(
                   context,
                   MaterialPageRoute(
-                      builder: (context) => ImageView(asset: asset)));
+                      builder: (context) => GalleryPhotoViewWrapper(
+                            asset: asset,
+                          )));
             },
             child: Image.memory(bytes, fit: BoxFit.cover));
       },
