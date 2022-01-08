@@ -10,16 +10,18 @@ import 'image_data_models.dart';
 class AssetThumbnail extends StatelessWidget {
   const AssetThumbnail({
     Key? key,
-    required this.asset,
+    required this.assets,
+    required this.index,
   }) : super(key: key);
 
-  final AssetEntity asset;
+  final List<AssetEntity> assets;
+  final int index;
 
   @override
   Widget build(BuildContext context) {
     // We're using a FutureBuilder since thumbData is a future
     return FutureBuilder<Uint8List?>(
-      future: asset.thumbData,
+      future: assets[index].thumbData,
       builder: (_, snapshot) {
         final bytes = snapshot.data;
         // If we have no data, display a spinner
@@ -31,7 +33,8 @@ class AssetThumbnail extends StatelessWidget {
                   context,
                   MaterialPageRoute(
                       builder: (context) => GalleryPhotoViewWrapper(
-                            asset: asset,
+                            assets: assets,
+                            index: index,
                           )));
             },
             child: Image.memory(bytes, fit: BoxFit.cover));
@@ -83,7 +86,10 @@ class _GridImageViewState extends State<GridImageView> {
         ),
         itemCount: toShow.length,
         itemBuilder: (_, index) {
-          return AssetThumbnail(asset: toShow[index]);
+          return AssetThumbnail(
+            assets: toShow,
+            index: index,
+          );
         },
       ),
     );
