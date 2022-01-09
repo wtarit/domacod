@@ -1,3 +1,4 @@
+import 'package:domacod/grid_image_view.dart';
 import 'package:flutter/material.dart';
 import 'package:photo_manager/photo_manager.dart';
 import 'package:photo_view/photo_view.dart';
@@ -32,6 +33,18 @@ class _GalleryPhotoViewWrapperState extends State<GalleryPhotoViewWrapper> {
     ]);
   }
 
+  void deleteImage() async {
+    final file = File(getAbsolutePath(widget.assets[currentIndex].relativePath,
+        widget.assets[currentIndex].title));
+    try {
+      if (await file.exists()) {
+        await file.delete();
+      }
+    } catch (e) {
+      // Error in getting access to the file.
+    }
+  }
+
   void onPageChanged(int index) {
     setState(() {
       currentIndex = index;
@@ -53,11 +66,19 @@ class _GalleryPhotoViewWrapperState extends State<GalleryPhotoViewWrapper> {
             bottom: 0,
             child: Row(
               children: [
-                ElevatedButton(onPressed: shareImage, child: Text("share")),
+                ElevatedButton(onPressed: shareImage, child: Icon(Icons.share)),
                 const Text(
                   "data",
                   style: TextStyle(backgroundColor: Colors.yellow),
                 ),
+                ElevatedButton(
+                  onPressed: deleteImage,
+                  child: Icon(Icons.delete),
+                ),
+                ElevatedButton(
+                  onPressed: shareImage,
+                  child: Icon(Icons.info_outline),
+                )
               ],
             ),
           )
