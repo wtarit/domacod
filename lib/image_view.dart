@@ -67,10 +67,6 @@ class _GalleryPhotoViewWrapperState extends State<GalleryPhotoViewWrapper> {
             child: Row(
               children: [
                 ElevatedButton(onPressed: shareImage, child: Icon(Icons.share)),
-                const Text(
-                  "data",
-                  style: TextStyle(backgroundColor: Colors.yellow),
-                ),
                 ElevatedButton(
                   onPressed: deleteImage,
                   child: Icon(Icons.delete),

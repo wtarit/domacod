@@ -6,7 +6,6 @@ import 'package:flutter/material.dart';
 import 'package:photo_manager/photo_manager.dart';
 import 'objectbox.dart';
 import 'image_data_models.dart';
-import 'package:path/path.dart' as p;
 import 'dart:isolate';
 import 'utils/isolate_utils.dart';
 import 'tflite/classifier_yolov4.dart';
