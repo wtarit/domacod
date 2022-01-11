@@ -26,6 +26,8 @@ class GalleryPhotoViewWrapper extends StatefulWidget {
 class _GalleryPhotoViewWrapperState extends State<GalleryPhotoViewWrapper> {
   late int currentIndex = widget.index;
 
+  get primary => null;
+
   void shareImage() {
     Share.shareFiles([
       getAbsolutePath(widget.assets[currentIndex].relativePath,
@@ -51,6 +53,13 @@ class _GalleryPhotoViewWrapperState extends State<GalleryPhotoViewWrapper> {
     });
   }
 
+  final ButtonStyle raisedButtonStyle = ElevatedButton.styleFrom(
+    onPrimary: Colors.white,
+    primary: Colors.black.withOpacity(0.05),
+    alignment: Alignment.center,
+    minimumSize: Size(130, 70),
+  );
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -64,14 +73,21 @@ class _GalleryPhotoViewWrapperState extends State<GalleryPhotoViewWrapper> {
           ),
           Positioned(
             bottom: 0,
+            left: 5,
+            right: 5,
             child: Row(
               children: [
-                ElevatedButton(onPressed: shareImage, child: Icon(Icons.share)),
                 ElevatedButton(
+                    style: raisedButtonStyle,
+                    onPressed: shareImage,
+                    child: Icon(Icons.share)),
+                ElevatedButton(
+                  style: raisedButtonStyle,
                   onPressed: deleteImage,
                   child: Icon(Icons.delete),
                 ),
                 ElevatedButton(
+                  style: raisedButtonStyle,
                   onPressed: shareImage,
                   child: Icon(Icons.info_outline),
                 )
