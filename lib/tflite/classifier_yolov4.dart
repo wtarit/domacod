@@ -23,8 +23,8 @@ class Classifier {
   /// Labels file loaded as list
   List<String> labels = [];
 
-  static const String modelFileName = "yolov4-416-fp32.tflite";
-  static const String labelFileName = "coco.txt";
+  static const String modelFileName = "coco_document.tflite";
+  static const String labelFileName = "obj.names";
 
   // Model Input size
   static const int inputSize = 416;
