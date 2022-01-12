@@ -7,6 +7,10 @@ String getAbsolutePath(String? relpath, String? fname) {
     if (!p.isAbsolute(path)) {
       path = p.join("/storage/emulated/0/", path);
     }
+  } else if (relpath == null && fname != null) {
+    path = p.join(fname);
+  } else if (relpath != null && fname == null) {
+    path = p.join(relpath);
   }
   return path;
 }

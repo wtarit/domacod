@@ -53,6 +53,90 @@ class _GalleryPhotoViewWrapperState extends State<GalleryPhotoViewWrapper> {
     });
   }
 
+  /*showInfo(context) {
+    showModalBottomSheet(
+        context: context,
+        backgroundColor: Colors.transparent,
+        builder: (context) => Container(
+              decoration: const BoxDecoration(
+                  color: Colors.black,
+                  borderRadius: BorderRadius.only(
+                    topLeft: Radius.circular(25),
+                    topRight: Radius.circular(25),
+                  )),
+                  child: Column(children: [
+                    Text("Info", style: TextStyle(color: Colors.white))
+                  ],)
+            ));
+  }*/
+
+  Widget? _showBottomSheet() {
+    showModalBottomSheet(
+        context: context,
+        backgroundColor: Colors.transparent,
+        builder: (BuildContext context) {
+          return Container(
+            padding: const EdgeInsets.all(20),
+            decoration: const BoxDecoration(
+              borderRadius: BorderRadius.only(
+                  topLeft: Radius.circular(25), topRight: Radius.circular(25)),
+              color: Colors.black,
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Text(
+                  "Info",
+                  style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 30,
+                      fontWeight: FontWeight.w800),
+                ),
+                RichText(
+                  text: TextSpan(
+                    children: [
+                      const WidgetSpan(
+                        child: Icon(Icons.photo_outlined,
+                            color: Colors.white60, size: 30),
+                      ),
+                      TextSpan(
+                        text:
+                            "   File Name: ${getAbsolutePath(null, widget.assets[currentIndex].title)}",
+                        style: const TextStyle(
+                            color: Colors.white,
+                            fontSize: 16,
+                            fontWeight: FontWeight.w500,
+                            height: 3),
+                      ),
+                    ],
+                  ),
+                ),
+                RichText(
+                  text: TextSpan(
+                    children: [
+                      const WidgetSpan(
+                        child: Icon(Icons.folder_open,
+                            color: Colors.white60, size: 30),
+                      ),
+                      TextSpan(
+                        text:
+                            "   File Path: ${getAbsolutePath(widget.assets[currentIndex].relativePath, null)}",
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 16,
+                          fontWeight: FontWeight.w500,
+                          height: 3,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          );
+        });
+  }
+
   final ButtonStyle raisedButtonStyle = ElevatedButton.styleFrom(
     onPrimary: Colors.white,
     primary: Colors.black.withOpacity(0.05),
@@ -75,23 +159,26 @@ class _GalleryPhotoViewWrapperState extends State<GalleryPhotoViewWrapper> {
             bottom: 0,
             left: 5,
             right: 5,
-            child: Row(
-              children: [
-                ElevatedButton(
+            child: Center(
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  ElevatedButton(
+                      style: raisedButtonStyle,
+                      onPressed: shareImage,
+                      child: Icon(Icons.share)),
+                  ElevatedButton(
                     style: raisedButtonStyle,
-                    onPressed: shareImage,
-                    child: Icon(Icons.share)),
-                ElevatedButton(
-                  style: raisedButtonStyle,
-                  onPressed: deleteImage,
-                  child: Icon(Icons.delete),
-                ),
-                ElevatedButton(
-                  style: raisedButtonStyle,
-                  onPressed: shareImage,
-                  child: Icon(Icons.info_outline),
-                )
-              ],
+                    onPressed: deleteImage,
+                    child: Icon(Icons.delete),
+                  ),
+                  ElevatedButton(
+                    style: raisedButtonStyle,
+                    onPressed: _showBottomSheet,
+                    child: Icon(Icons.info_outline),
+                  )
+                ],
+              ),
             ),
           )
         ],
