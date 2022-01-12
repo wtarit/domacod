@@ -62,7 +62,7 @@ class _GridImageViewState extends State<GridImageView> {
   List<AssetEntity> toShow = [];
   void fetchImageToShow() {
     // TODO: select image base on category.
-    if (widget.category == "recent") {
+    if (widget.category == "Recent") {
       toShow = widget.assets;
     }
   }

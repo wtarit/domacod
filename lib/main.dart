@@ -10,7 +10,6 @@ import 'dart:isolate';
 import 'utils/isolate_utils.dart';
 import 'tflite/classifier_yolov4.dart';
 import 'package:http/http.dart' as http;
-import 'package:http_parser/http_parser.dart';
 
 /// Provides access to the ObjectBox Store throughout the app.
 late ObjectBox objectbox;
@@ -144,7 +143,33 @@ class _HomePageState extends State<HomePage> {
     for (int i = 0; i < newPaths.length; i++) {
       if (!dbPaths.contains(newPaths[i])) {
         List<String> objdetectionResult = await inference(newPaths[i]);
-        if (objdetectionResult[0] == "Document") {}
+        String text = "";
+        String mainCategory = "";
+        if (objdetectionResult.isNotEmpty) {
+          mainCategory = objdetectionResult[0];
+          if (mainCategory == "Document") {
+            var request = http.MultipartRequest(
+                'POST',
+                Uri.parse(
+                    "https://asia-southeast1-domacod.cloudfunctions.net/ocr"));
+            request.files
+                .add(await http.MultipartFile.fromPath('file', newPaths[i]));
+
+            http.StreamedResponse response = await request.send();
+
+            if (response.statusCode == 200) {
+              text = await response.stream.bytesToString();
+            } else {
+              print(response.reasonPhrase);
+            }
+          }
+        }
+        await assetBox.putAsync(ImageData(
+          imagePath: newPaths[i],
+          mainCategory: mainCategory,
+          category: objdetectionResult,
+          text: text,
+        ));
         setState(() {
           processed++;
         });
@@ -157,7 +182,8 @@ class _HomePageState extends State<HomePage> {
 
   void printDB() {
     List<ImageData> a = assetBox.getAll();
-    print(a.length);
+    print("There are ${a.length} object");
+    print(a);
   }
 
   void deleteDB() {
@@ -166,7 +192,7 @@ class _HomePageState extends State<HomePage> {
 
   void inferone() async {
     // String imgPath = "/storage/emulated/0/DCIM/Camera/brave_ywwYLP3X1K.jpg";
-    String imgPath = "/storage/emulated/0/DCIM/Camera/20220107_181024.jpg";
+    String imgPath = "/storage/emulated/0/DCIM/Camera/w644.jpg";
     List<String> objdetectionResult = await inference(imgPath);
     if (objdetectionResult[0] == "Document") {
       var request = http.MultipartRequest('POST',
@@ -232,8 +258,12 @@ class _HomePageState extends State<HomePage> {
           Text('There are ${assets.length} assets'),
           ElevatedButton(
               onPressed: () {
-                Navigator.push(context,
-                    MaterialPageRoute(builder: (context) => const MainPage()));
+                Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                        builder: (context) => MainPage(
+                              assetBox: assetBox,
+                            )));
               },
               child: const Text("Push to home")),
           ElevatedButton(onPressed: addDB, child: const Text("addDB")),

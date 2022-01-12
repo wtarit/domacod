@@ -5,7 +5,7 @@
   "entities": [
     {
       "id": "1:4477898057681581101",
-      "lastPropertyId": "5:6463060491848671301",
+      "lastPropertyId": "6:8576719309732077568",
       "name": "ImageData",
       "properties": [
         {
@@ -28,6 +28,11 @@
           "id": "5:6463060491848671301",
           "name": "category",
           "type": 30
+        },
+        {
+          "id": "6:8576719309732077568",
+          "name": "mainCategory",
+          "type": 9
         }
       ],
       "relations": []

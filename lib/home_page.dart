@@ -1,10 +1,16 @@
+import 'dart:io';
+
 import 'package:domacod/grid_image_view.dart';
+import 'package:domacod/objectbox.g.dart';
 import 'package:flutter/material.dart';
 import 'package:photo_manager/photo_manager.dart';
+import 'package:objectbox/objectbox.dart';
+import 'image_data_models.dart';
 
 class MainPage extends StatefulWidget {
-  const MainPage({Key? key}) : super(key: key);
+  const MainPage({Key? key, required this.assetBox}) : super(key: key);
 
+  final Box<ImageData> assetBox;
   @override
   _MainPageState createState() => _MainPageState();
 }
@@ -38,9 +44,39 @@ class _MainPageState extends State<MainPage> {
     super.initState();
   }
 
+  void printDB() {
+    List<ImageData> a = widget.assetBox.getAll();
+    Query<ImageData> query =
+        widget.assetBox.query(ImageData_.category.contains("Document")).build();
+    ImageData? doc = query.findFirst();
+    if (doc != null) {
+      print(doc);
+    }
+  }
+
+  String queryImage(String queryCategory) {
+    if (queryCategory == "Recent") {
+      ImageData? data = widget.assetBox.query().build().findFirst();
+      if (data != null) {
+        return data.imagePath;
+      } else {
+        return "";
+      }
+    }
+    Query<ImageData> query = widget.assetBox
+        .query(ImageData_.category.contains(queryCategory))
+        .build();
+    ImageData? doc = query.findFirst();
+    if (doc != null) {
+      return doc.imagePath;
+    }
+    return "";
+  }
+
   Widget categoryGrid() {
     List<String> categories = [
       "Recent",
+      "Document",
       "Cat",
       "Dog",
       "Bird",
@@ -53,16 +89,26 @@ class _MainPageState extends State<MainPage> {
     ];
     List<Widget> gridElement = [];
     for (String category in categories) {
+      String imgPath = queryImage(category);
+      late Widget img;
+      if (imgPath.isNotEmpty) {
+        img = Image.file(File(imgPath));
+      } else {
+        img = Image.asset("assets/question_mark.png");
+      }
       gridElement.add(InkWell(
-        // onTap: () {
-        //   Navigator.push(
-        //       context,
-        //       MaterialPageRoute(
-        //           builder: (context) => GridImageView(
-        //               assets: assets, assetBox: assetBox, category: category)));
-        // },
+        onTap: () {
+          Navigator.push(
+              context,
+              MaterialPageRoute(
+                  builder: (context) => GridImageView(
+                        assets: assets,
+                        assetBox: widget.assetBox,
+                        category: category,
+                      )));
+        },
         child: GridTile(
-          child: Image.asset("assets/question_mark.png"),
+          child: img,
           footer: GridTileBar(
             backgroundColor: Colors.black,
             title: Text(category),
@@ -75,11 +121,7 @@ class _MainPageState extends State<MainPage> {
         height: screenHeight,
       ));
     }
-    gridElement.add(ElevatedButton(
-        onPressed: () {
-          print("object");
-        },
-        child: Text("test")));
+    gridElement.add(ElevatedButton(onPressed: printDB, child: Text("test")));
     return GridView.count(
       // shrinkWrap: true,
       crossAxisCount: 2,
