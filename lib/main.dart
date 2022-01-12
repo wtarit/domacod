@@ -9,6 +9,8 @@ import 'image_data_models.dart';
 import 'dart:isolate';
 import 'utils/isolate_utils.dart';
 import 'tflite/classifier_yolov4.dart';
+import 'package:http/http.dart' as http;
+import 'package:http_parser/http_parser.dart';
 
 /// Provides access to the ObjectBox Store throughout the app.
 late ObjectBox objectbox;
@@ -84,7 +86,7 @@ class _HomePageState extends State<HomePage> {
   }
 
   void printPath() {
-    int index = 3;
+    int index = 0;
     if (assets.isNotEmpty) {
       String? relpath = assets[index].relativePath;
       String? fname = assets[index].title;
@@ -107,12 +109,11 @@ class _HomePageState extends State<HomePage> {
     isolateUtils.sendPort
         .send(isolateData..responsePort = responsePort.sendPort);
     var results = await responsePort.first;
-    print(results);
-    List<String> output_category = [];
+    List<String> outputCategory = [];
     for (Recognition recognition in results["recognitions"]) {
-      output_category.add(recognition.label);
+      outputCategory.add(recognition.label);
     }
-    return output_category.take(5).toList();
+    return outputCategory.take(5).toList();
   }
 
   void addDB() async {
@@ -142,8 +143,8 @@ class _HomePageState extends State<HomePage> {
     // Add new image that not exist in database before.
     for (int i = 0; i < newPaths.length; i++) {
       if (!dbPaths.contains(newPaths[i])) {
-        // TODO: Add inferencing code
-        print(await inference(newPaths[i]));
+        List<String> objdetectionResult = await inference(newPaths[i]);
+        if (objdetectionResult[0] == "Document") {}
         setState(() {
           processed++;
         });
@@ -164,8 +165,23 @@ class _HomePageState extends State<HomePage> {
   }
 
   void inferone() async {
-    print(
-        await inference("/storage/emulated/0/DCIM/Camera/563000012763501.jpg"));
+    // String imgPath = "/storage/emulated/0/DCIM/Camera/brave_ywwYLP3X1K.jpg";
+    String imgPath = "/storage/emulated/0/DCIM/Camera/20220107_181024.jpg";
+    List<String> objdetectionResult = await inference(imgPath);
+    if (objdetectionResult[0] == "Document") {
+      var request = http.MultipartRequest('POST',
+          Uri.parse("https://asia-southeast1-domacod.cloudfunctions.net/ocr"));
+      request.files.add(await http.MultipartFile.fromPath('file', imgPath));
+
+      http.StreamedResponse response = await request.send();
+
+      if (response.statusCode == 200) {
+        print(await response.stream.bytesToString());
+      } else {
+        print(response.reasonPhrase);
+      }
+    }
+    print("done");
   }
 
   @override
