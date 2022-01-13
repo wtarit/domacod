@@ -2,10 +2,11 @@ import 'dart:io';
 
 import 'package:domacod/grid_image_view.dart';
 import 'package:domacod/objectbox.g.dart';
+import 'package:domacod/search_result_view.dart';
 import 'package:flutter/material.dart';
 import 'package:photo_manager/photo_manager.dart';
-import 'package:objectbox/objectbox.dart';
 import 'image_data_models.dart';
+import 'package:material_floating_search_bar/material_floating_search_bar.dart';
 
 class MainPage extends StatefulWidget {
   const MainPage({Key? key, required this.assetBox}) : super(key: key);
@@ -16,7 +17,7 @@ class MainPage extends StatefulWidget {
 }
 
 class _MainPageState extends State<MainPage> {
-  bool busy = true;
+  bool busy = false;
   late double screenWidth = MediaQuery.of(context).size.width;
   late double screenHeight = MediaQuery.of(context).size.height;
   List<AssetEntity> assets = [];
@@ -40,18 +41,27 @@ class _MainPageState extends State<MainPage> {
 
   @override
   void initState() {
+    controller = FloatingSearchBarController();
     _fetchAssets();
     super.initState();
   }
 
   void printDB() {
-    List<ImageData> a = widget.assetBox.getAll();
-    Query<ImageData> query =
-        widget.assetBox.query(ImageData_.category.contains("Document")).build();
-    ImageData? doc = query.findFirst();
-    if (doc != null) {
-      print(doc);
+    // List<ImageData> a = widget.assetBox.getAll();
+    // Query<ImageData> query =
+    //     widget.assetBox.query(ImageData_.category.contains("Document")).build();
+    // ImageData? doc = query.findFirst();
+    // if (doc != null) {
+    //   print(doc);
+    // }
+    var fsb = FloatingSearchBar.of(context);
+
+    double padding = 0;
+    if (fsb != null) {
+      padding = fsb.widget.height;
+      print(padding);
     }
+    print(fsb);
   }
 
   String queryImage(String queryCategory) {
@@ -92,29 +102,30 @@ class _MainPageState extends State<MainPage> {
       String imgPath = queryImage(category);
       late Widget img;
       if (imgPath.isNotEmpty) {
-        img = Image.file(File(imgPath));
-      } else {
-        img = Image.asset("assets/question_mark.png");
-      }
-      gridElement.add(InkWell(
-        onTap: () {
-          Navigator.push(
-              context,
-              MaterialPageRoute(
-                  builder: (context) => GridImageView(
-                        assets: assets,
-                        assetBox: widget.assetBox,
-                        category: category,
-                      )));
-        },
-        child: GridTile(
-          child: img,
-          footer: GridTileBar(
-            backgroundColor: Colors.black,
-            title: Text(category),
+        img = Image.file(
+          File(imgPath),
+          fit: BoxFit.cover,
+        );
+        gridElement.add(InkWell(
+          onTap: () {
+            Navigator.push(
+                context,
+                MaterialPageRoute(
+                    builder: (context) => GridImageView(
+                          assets: assets,
+                          assetBox: widget.assetBox,
+                          category: category,
+                        )));
+          },
+          child: GridTile(
+            child: img,
+            footer: GridTileBar(
+              backgroundColor: Colors.black,
+              title: Text(category),
+            ),
           ),
-        ),
-      ));
+        ));
+      }
     }
     if (busy) {
       gridElement.add(Container(
@@ -122,44 +133,212 @@ class _MainPageState extends State<MainPage> {
       ));
     }
     gridElement.add(ElevatedButton(onPressed: printDB, child: Text("test")));
+    final fsb = FloatingSearchBar.of(context);
+    double padding = 100;
+    if (fsb != null) {
+      padding = fsb.widget.height;
+      print(padding);
+    }
     return GridView.count(
+      padding: EdgeInsets.only(top: padding),
       // shrinkWrap: true,
       crossAxisCount: 2,
       children: gridElement,
     );
   }
 
+  List<String> _searchHistory = [
+    'fuchsia',
+    'flutter',
+    'widgets',
+    'resocoder',
+  ];
+
+  static const historyLength = 5;
+
+  List<String> filteredSearchHistory = [];
+
+  List<String> filterSearchTerms({
+    required String filter,
+  }) {
+    if (filter.isNotEmpty) {
+      return _searchHistory.reversed
+          .where((term) => term.startsWith(filter))
+          .toList();
+    } else {
+      return _searchHistory.reversed.toList();
+    }
+  }
+
+  void deleteSearchTerm(String term) {
+    _searchHistory.removeWhere((t) => t == term);
+    filteredSearchHistory = filterSearchTerms(filter: "");
+  }
+
+  void putSearchTermFirst(String term) {
+    deleteSearchTerm(term);
+    addSearchTerm(term);
+  }
+
+  void addSearchTerm(String term) {
+    if (_searchHistory.contains(term)) {
+      putSearchTermFirst(term);
+      return;
+    }
+
+    _searchHistory.add(term);
+    if (_searchHistory.length > historyLength) {
+      _searchHistory.removeRange(0, _searchHistory.length - historyLength);
+    }
+
+    filteredSearchHistory = filterSearchTerms(filter: "");
+  }
+
+  // The currently searched-for term
+  String selectedTerm = "";
+  late FloatingSearchBarController controller;
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text("Domacod"),
-      ),
-      body: Stack(children: [
-        categoryGrid(),
-        Positioned(
-          bottom: 0,
-          child: busy
-              ? Container(
-                  margin: const EdgeInsets.all(5.0),
-                  width: screenWidth,
-                  height: screenHeight * 0.1,
-                  color: Colors.white,
-                  child: Row(
-                    // mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: const [
-                      CircularProgressIndicator(),
-                      Spacer(),
-                      Text("Indexed 0 of 10"),
-                      Spacer(
-                        flex: 2,
-                      ),
-                    ],
-                  ),
-                )
-              : Container(),
+      body: FloatingSearchBar(
+        controller: controller,
+        // body: FloatingSearchBarScrollNotifier(
+        //   child: SearchResultView(
+        //       // searchTerm: selectedTerm,
+        //       ),
+        // ),
+        body: Stack(children: [
+          categoryGrid(),
+          Positioned(
+            bottom: 0,
+            child: busy
+                ? Container(
+                    margin: const EdgeInsets.all(5.0),
+                    width: screenWidth,
+                    height: screenHeight * 0.1,
+                    color: Colors.white,
+                    child: Row(
+                      // mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        const CircularProgressIndicator(),
+                        const Spacer(),
+                        Text("Indexed 0 of ${assets.length}"),
+                        const Spacer(
+                          flex: 2,
+                        ),
+                      ],
+                    ),
+                  )
+                : Container(),
+          ),
+        ]),
+        transition: CircularFloatingSearchBarTransition(),
+        physics: BouncingScrollPhysics(),
+        title: Text(
+          selectedTerm,
+          style: Theme.of(context).textTheme.headline6,
         ),
-      ]),
+        hint: 'Search and find out...',
+        actions: [
+          FloatingSearchBarAction.searchToClear(),
+        ],
+        onQueryChanged: (query) {
+          setState(() {
+            filteredSearchHistory = filterSearchTerms(filter: query);
+          });
+        },
+        onSubmitted: (query) {
+          setState(() {
+            addSearchTerm(query);
+            // selectedTerm = query;
+            selectedTerm = "";
+          });
+          controller.close();
+          Navigator.push(
+              context,
+              MaterialPageRoute(
+                  builder: (context) => SearchResultView(
+                        query: query,
+                      )));
+        },
+        builder: (context, transition) {
+          return ClipRRect(
+            borderRadius: BorderRadius.circular(8),
+            child: Material(
+              color: Colors.white,
+              elevation: 4,
+              child: Builder(
+                builder: (context) {
+                  if (filteredSearchHistory.isEmpty &&
+                      controller.query.isEmpty) {
+                    return Container(
+                      height: 56,
+                      width: double.infinity,
+                      alignment: Alignment.center,
+                      child: Text(
+                        'Start searching',
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: Theme.of(context).textTheme.caption,
+                      ),
+                    );
+                  } else if (filteredSearchHistory.isEmpty) {
+                    return ListTile(
+                      title: Text(controller.query),
+                      leading: const Icon(Icons.search),
+                      onTap: () {
+                        setState(() {
+                          addSearchTerm(controller.query);
+                          selectedTerm = controller.query;
+                        });
+                        controller.close();
+                      },
+                    );
+                  } else {
+                    return Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: filteredSearchHistory
+                          .map(
+                            (term) => ListTile(
+                              title: Text(
+                                term,
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                              leading: const Icon(Icons.history),
+                              trailing: IconButton(
+                                icon: const Icon(Icons.clear),
+                                onPressed: () {
+                                  setState(() {
+                                    deleteSearchTerm(term);
+                                  });
+                                },
+                              ),
+                              onTap: () {
+                                setState(() {
+                                  putSearchTermFirst(term);
+                                  selectedTerm = term;
+                                });
+                                controller.close();
+                              },
+                            ),
+                          )
+                          .toList(),
+                    );
+                  }
+                },
+              ),
+            ),
+          );
+        },
+      ),
     );
+  }
+
+  @override
+  void dispose() {
+    controller.dispose();
+    super.dispose();
   }
 }

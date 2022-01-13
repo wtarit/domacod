@@ -24,10 +24,20 @@ Future<void> main() async {
   runApp(const MyApp());
 }
 
-class MyApp extends StatelessWidget {
+class MyApp extends StatefulWidget {
   const MyApp({Key? key}) : super(key: key);
 
-  // This widget is the root of your application.
+  @override
+  State<MyApp> createState() => _MyAppState();
+}
+
+class _MyAppState extends State<MyApp> {
+  final assetBox = objectbox.store.box<ImageData>();
+  @override
+  void initState() {
+    super.initState();
+  }
+
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
@@ -36,7 +46,9 @@ class MyApp extends StatelessWidget {
       theme: ThemeData(
         primarySwatch: Colors.blue,
       ),
-      home: const HomePage(),
+      home: MainPage(
+        assetBox: assetBox,
+      ),
     );
   }
 }
@@ -49,9 +61,6 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
-  Icon customIcon = const Icon(Icons.search);
-  Widget customSearchBar = const Text('Domacod');
-
   List<AssetEntity> assets = [];
   final assetBox = objectbox.store.box<ImageData>();
   bool busy = false;
@@ -214,58 +223,12 @@ class _HomePageState extends State<HomePage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: customSearchBar,
+        title: const Text('Domacod'),
         centerTitle: true,
-        actions: [
-          IconButton(
-              onPressed: () {
-                setState(() {
-                  if (customIcon.icon == Icons.search) {
-                    customIcon = const Icon(Icons.cancel);
-                    customSearchBar = const ListTile(
-                      leading: Icon(
-                        Icons.search,
-                        color: Colors.white,
-                        size: 28,
-                      ),
-                      title: TextField(
-                        autofocus: true,
-                        decoration: InputDecoration(
-                          hintText: 'search',
-                          hintStyle: TextStyle(
-                            color: Colors.white,
-                            fontSize: 18,
-                            fontStyle: FontStyle.italic,
-                          ),
-                          border: InputBorder.none,
-                        ),
-                        style: TextStyle(
-                          color: Colors.white,
-                        ),
-                      ),
-                    );
-                  } else {
-                    customIcon = const Icon(Icons.search);
-                    customSearchBar = const Text('Domacod');
-                  }
-                });
-              },
-              icon: customIcon)
-        ],
       ),
       body: Column(
         children: <Widget>[
           Text('There are ${assets.length} assets'),
-          ElevatedButton(
-              onPressed: () {
-                Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                        builder: (context) => MainPage(
-                              assetBox: assetBox,
-                            )));
-              },
-              child: const Text("Push to home")),
           ElevatedButton(onPressed: addDB, child: const Text("addDB")),
           ElevatedButton(onPressed: printDB, child: const Text("printDB")),
           ElevatedButton(onPressed: printPath, child: const Text("print path")),

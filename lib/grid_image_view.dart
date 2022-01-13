@@ -1,5 +1,8 @@
 import 'dart:typed_data';
 
+import 'package:domacod/objectbox.g.dart';
+import 'package:domacod/utils/path_utils.dart';
+
 import 'image_view.dart';
 import 'package:flutter/material.dart';
 import 'package:objectbox/objectbox.dart';
@@ -61,9 +64,17 @@ class GridImageView extends StatefulWidget {
 class _GridImageViewState extends State<GridImageView> {
   List<AssetEntity> toShow = [];
   void fetchImageToShow() {
-    // TODO: select image base on category.
     if (widget.category == "Recent") {
       toShow = widget.assets;
+    } else {
+      Query<ImageData> query = widget.assetBox
+          .query(ImageData_.mainCategory.equals(widget.category))
+          .build();
+      List<String> filename = query.property(ImageData_.imagePath).find();
+      toShow = widget.assets
+          .where((e) =>
+              filename.contains(getAbsolutePath(e.relativePath, e.title)))
+          .toList();
     }
   }
 
@@ -77,7 +88,7 @@ class _GridImageViewState extends State<GridImageView> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text("Recent"),
+        title: Text(widget.category),
       ),
       body: GridView.builder(
         gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
