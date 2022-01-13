@@ -7,6 +7,12 @@ import 'package:flutter/material.dart';
 import 'package:photo_manager/photo_manager.dart';
 import 'image_data_models.dart';
 import 'package:material_floating_search_bar/material_floating_search_bar.dart';
+import 'utils/path_utils.dart';
+import 'package:http/http.dart' as http;
+import 'tflite/classifier_yolov4.dart';
+import 'utils/isolate_utils.dart';
+import 'dart:isolate';
+import 'tflite/recognition.dart';
 
 class MainPage extends StatefulWidget {
   const MainPage({Key? key, required this.assetBox}) : super(key: key);
@@ -17,12 +23,15 @@ class MainPage extends StatefulWidget {
 }
 
 class _MainPageState extends State<MainPage> {
-  bool busy = false;
+  bool busy = true;
   late double screenWidth = MediaQuery.of(context).size.width;
   late double screenHeight = MediaQuery.of(context).size.height;
   List<AssetEntity> assets = [];
+  int processed = 0;
+  late IsolateUtils isolateUtils;
+  Classifier classifier = Classifier();
 
-  void _fetchAssets() async {
+  Future<List<AssetEntity>> _fetchAssets() async {
     // Set onlyAll to true, to fetch only the 'Recent' album
     // which contains all the photos/videos in the storage
     final albums = await PhotoManager.getAssetPathList(
@@ -36,13 +45,102 @@ class _MainPageState extends State<MainPage> {
       );
       // Update the state and notify UI
       setState(() => assets = recentAssets);
+      return recentAssets;
     }
+    return [];
+  }
+
+  /// Runs inference in another isolate
+  Future<List<String>> inference(String filepath) async {
+    IsolateData isolateData = IsolateData(
+      filepath,
+      classifier.interpreter.address,
+      classifier.labels,
+    );
+    ReceivePort responsePort = ReceivePort();
+    isolateUtils.sendPort
+        .send(isolateData..responsePort = responsePort.sendPort);
+    var results = await responsePort.first;
+    List<String> outputCategory = [];
+    for (Recognition recognition in results["recognitions"]) {
+      outputCategory.add(recognition.label);
+    }
+    return outputCategory.take(5).toList();
+  }
+
+  void addDB() async {
+    setState(() {
+      busy = true;
+    });
+    List<String> newPaths = [];
+    List<String> dbPaths = [];
+    List<ImageData> dataBase = widget.assetBox.getAll();
+    for (ImageData db in dataBase) {
+      dbPaths.add(db.imagePath);
+    }
+    for (AssetEntity asset in assets) {
+      String? relpath = asset.relativePath;
+      String? fname = asset.title;
+      String path = getAbsolutePath(relpath, fname);
+      newPaths.add(path);
+    }
+
+    // Loop over database to see which image is deleted.
+    for (int i = 0; i < dbPaths.length; i++) {
+      if (!newPaths.contains(dbPaths[i])) {
+        widget.assetBox.remove(dataBase[i].id);
+      }
+    }
+
+    // Add new image that not exist in database before.
+    for (int i = 0; i < newPaths.length; i++) {
+      if (!dbPaths.contains(newPaths[i])) {
+        List<String> objdetectionResult = await inference(newPaths[i]);
+        String text = "";
+        String mainCategory = "";
+        if (objdetectionResult.isNotEmpty) {
+          mainCategory = objdetectionResult[0];
+          if (mainCategory == "Document") {
+            var request = http.MultipartRequest(
+                'POST',
+                Uri.parse(
+                    "https://asia-southeast1-domacod.cloudfunctions.net/ocr"));
+            request.files
+                .add(await http.MultipartFile.fromPath('file', newPaths[i]));
+
+            http.StreamedResponse response = await request.send();
+
+            if (response.statusCode == 200) {
+              text = await response.stream.bytesToString();
+            } else {
+              print(response.reasonPhrase);
+            }
+          }
+        }
+        await widget.assetBox.putAsync(ImageData(
+          imagePath: newPaths[i],
+          mainCategory: mainCategory,
+          category: objdetectionResult,
+          text: text,
+        ));
+        setState(() {
+          processed++;
+        });
+      }
+    }
+    setState(() {
+      busy = false;
+    });
   }
 
   @override
   void initState() {
     controller = FloatingSearchBarController();
-    _fetchAssets();
+    isolateUtils = IsolateUtils();
+    isolateUtils.start();
+    _fetchAssets().then((data) {
+      addDB();
+    });
     super.initState();
   }
 
@@ -54,14 +152,17 @@ class _MainPageState extends State<MainPage> {
     // if (doc != null) {
     //   print(doc);
     // }
-    var fsb = FloatingSearchBar.of(context);
+    // var fsb = FloatingSearchBar.of(context);
 
-    double padding = 0;
-    if (fsb != null) {
-      padding = fsb.widget.height;
-      print(padding);
-    }
-    print(fsb);
+    // double padding = 0;
+    // if (fsb != null) {
+    //   padding = fsb.widget.height;
+    //   print(padding);
+    // }
+    // print(fsb);
+    setState(() {
+      busy = !busy;
+    });
   }
 
   String queryImage(String queryCategory) {
@@ -147,12 +248,7 @@ class _MainPageState extends State<MainPage> {
     );
   }
 
-  List<String> _searchHistory = [
-    'fuchsia',
-    'flutter',
-    'widgets',
-    'resocoder',
-  ];
+  List<String> _searchHistory = [];
 
   static const historyLength = 5;
 
@@ -223,7 +319,7 @@ class _MainPageState extends State<MainPage> {
                       children: [
                         const CircularProgressIndicator(),
                         const Spacer(),
-                        Text("Indexed 0 of ${assets.length}"),
+                        Text("Indexed $processed of ${assets.length}"),
                         const Spacer(
                           flex: 2,
                         ),

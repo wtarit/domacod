@@ -124,71 +124,6 @@ class _HomePageState extends State<HomePage> {
     return outputCategory.take(5).toList();
   }
 
-  void addDB() async {
-    setState(() {
-      busy = true;
-    });
-    List<String> newPaths = [];
-    List<String> dbPaths = [];
-    List<ImageData> dataBase = assetBox.getAll();
-    for (ImageData db in dataBase) {
-      dbPaths.add(db.imagePath);
-    }
-    for (AssetEntity asset in assets) {
-      String? relpath = asset.relativePath;
-      String? fname = asset.title;
-      String path = getAbsolutePath(relpath, fname);
-      newPaths.add(path);
-    }
-
-    // Loop over database to see which image is deleted.
-    for (int i = 0; i < dbPaths.length; i++) {
-      if (!newPaths.contains(dbPaths[i])) {
-        assetBox.remove(dataBase[i].id);
-      }
-    }
-
-    // Add new image that not exist in database before.
-    for (int i = 0; i < newPaths.length; i++) {
-      if (!dbPaths.contains(newPaths[i])) {
-        List<String> objdetectionResult = await inference(newPaths[i]);
-        String text = "";
-        String mainCategory = "";
-        if (objdetectionResult.isNotEmpty) {
-          mainCategory = objdetectionResult[0];
-          if (mainCategory == "Document") {
-            var request = http.MultipartRequest(
-                'POST',
-                Uri.parse(
-                    "https://asia-southeast1-domacod.cloudfunctions.net/ocr"));
-            request.files
-                .add(await http.MultipartFile.fromPath('file', newPaths[i]));
-
-            http.StreamedResponse response = await request.send();
-
-            if (response.statusCode == 200) {
-              text = await response.stream.bytesToString();
-            } else {
-              print(response.reasonPhrase);
-            }
-          }
-        }
-        await assetBox.putAsync(ImageData(
-          imagePath: newPaths[i],
-          mainCategory: mainCategory,
-          category: objdetectionResult,
-          text: text,
-        ));
-        setState(() {
-          processed++;
-        });
-      }
-    }
-    setState(() {
-      busy = false;
-    });
-  }
-
   void printDB() {
     List<ImageData> a = assetBox.getAll();
     print("There are ${a.length} object");
@@ -229,7 +164,6 @@ class _HomePageState extends State<HomePage> {
       body: Column(
         children: <Widget>[
           Text('There are ${assets.length} assets'),
-          ElevatedButton(onPressed: addDB, child: const Text("addDB")),
           ElevatedButton(onPressed: printDB, child: const Text("printDB")),
           ElevatedButton(onPressed: printPath, child: const Text("print path")),
           ElevatedButton(onPressed: deleteDB, child: const Text("deleteDB")),
