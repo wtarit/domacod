@@ -1,4 +1,3 @@
-import 'image_data_models.dart';
 import 'objectbox.g.dart'; // created by `flutter pub run build_runner build`
 
 class ObjectBox {

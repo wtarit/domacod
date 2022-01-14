@@ -1,4 +1,3 @@
-import 'dart:ffi';
 import 'dart:io';
 import 'dart:math';
 import 'dart:ui';
@@ -68,7 +67,6 @@ class Classifier {
         _outputShapes.add(tensor.shape);
         _outputTypes.add(tensor.type);
       }
-      print("model loaded");
     } catch (e) {
       print("Error while creating interpreter: $e");
     }
@@ -99,7 +97,6 @@ class Classifier {
         _outputTypes.add(tensor.type);
       }
       labels = await FileUtil.loadLabels("assets/" + labelFileName);
-      print("model loaded");
     } catch (e) {
       print("Error while creating interpreter: $e");
     }
@@ -139,7 +136,6 @@ class Classifier {
         _outputShapes.add(tensor.shape);
         _outputTypes.add(tensor.type);
       }
-      print("model loaded");
     } catch (e) {
       print("Error while creating interpreter: $e");
     }

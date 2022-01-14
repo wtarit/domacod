@@ -3,12 +3,12 @@ import 'dart:io';
 import 'package:domacod/grid_image_view.dart';
 import 'package:domacod/objectbox.g.dart';
 import 'package:domacod/search_result_view.dart';
+import 'package:domacod/utils/http_ocr_utils.dart';
 import 'package:flutter/material.dart';
 import 'package:photo_manager/photo_manager.dart';
 import 'image_data_models.dart';
 import 'package:material_floating_search_bar/material_floating_search_bar.dart';
 import 'utils/path_utils.dart';
-import 'package:http/http.dart' as http;
 import 'tflite/classifier_yolov4.dart';
 import 'utils/isolate_utils.dart';
 import 'dart:isolate';
@@ -103,20 +103,7 @@ class _MainPageState extends State<MainPage> {
         if (objdetectionResult.isNotEmpty) {
           mainCategory = objdetectionResult[0];
           if (mainCategory == "Document") {
-            var request = http.MultipartRequest(
-                'POST',
-                Uri.parse(
-                    "https://asia-southeast1-domacod.cloudfunctions.net/ocr"));
-            request.files
-                .add(await http.MultipartFile.fromPath('file', newPaths[i]));
-
-            http.StreamedResponse response = await request.send();
-
-            if (response.statusCode == 200) {
-              text = await response.stream.bytesToString();
-            } else {
-              print(response.reasonPhrase);
-            }
+            requestOcr(newPaths[i]);
           }
         }
         await widget.assetBox.putAsync(ImageData(
@@ -148,23 +135,11 @@ class _MainPageState extends State<MainPage> {
     super.initState();
   }
 
-  void printDB() {
-    List<ImageData> a = widget.assetBox.getAll();
-    Query<ImageData> query =
-        widget.assetBox.query(ImageData_.category.contains("Document")).build();
-    ImageData? doc = query.findFirst();
-    if (doc != null) {
-      print(doc);
-    }
-    // var fsb = FloatingSearchBar.of(context);
-
-    // double padding = 0;
-    // if (fsb != null) {
-    //   padding = fsb.widget.height;
-    //   print(padding);
-    // }
-    // print(fsb);
-  }
+  // void printDB() {
+  //   Query<ImageData> query =
+  //       widget.assetBox.query(ImageData_.category.contains("Document")).build();
+  //   ImageData? doc = query.findFirst();
+  // }
 
   void deleteDB() {
     widget.assetBox.removeAll();
@@ -240,12 +215,7 @@ class _MainPageState extends State<MainPage> {
     }
     gridElement.add(
         ElevatedButton(onPressed: deleteDB, child: const Text("DeteleDB")));
-    final fsb = FloatingSearchBar.of(context);
     double padding = 100;
-    if (fsb != null) {
-      padding = fsb.widget.height;
-      print(padding);
-    }
     return GridView.count(
       padding: EdgeInsets.only(top: padding),
       // shrinkWrap: true,
@@ -336,7 +306,7 @@ class _MainPageState extends State<MainPage> {
           ),
         ]),
         transition: CircularFloatingSearchBarTransition(),
-        physics: BouncingScrollPhysics(),
+        physics: const BouncingScrollPhysics(),
         title: Text(
           selectedTerm,
           style: Theme.of(context).textTheme.headline6,
