@@ -91,7 +91,9 @@ class _MainPageState extends State<MainPage> {
         widget.assetBox.remove(dataBase[i].id);
       }
     }
-
+    setState(() {
+      processed = dbPaths.length;
+    });
     // Add new image that not exist in database before.
     for (int i = 0; i < newPaths.length; i++) {
       if (!dbPaths.contains(newPaths[i])) {
@@ -139,19 +141,21 @@ class _MainPageState extends State<MainPage> {
     isolateUtils = IsolateUtils();
     isolateUtils.start();
     _fetchAssets().then((data) {
-      addDB();
+      classifier.load().then((data) {
+        addDB();
+      });
     });
     super.initState();
   }
 
   void printDB() {
-    // List<ImageData> a = widget.assetBox.getAll();
-    // Query<ImageData> query =
-    //     widget.assetBox.query(ImageData_.category.contains("Document")).build();
-    // ImageData? doc = query.findFirst();
-    // if (doc != null) {
-    //   print(doc);
-    // }
+    List<ImageData> a = widget.assetBox.getAll();
+    Query<ImageData> query =
+        widget.assetBox.query(ImageData_.category.contains("Document")).build();
+    ImageData? doc = query.findFirst();
+    if (doc != null) {
+      print(doc);
+    }
     // var fsb = FloatingSearchBar.of(context);
 
     // double padding = 0;
@@ -160,9 +164,10 @@ class _MainPageState extends State<MainPage> {
     //   print(padding);
     // }
     // print(fsb);
-    setState(() {
-      busy = !busy;
-    });
+  }
+
+  void deleteDB() {
+    widget.assetBox.removeAll();
   }
 
   String queryImage(String queryCategory) {
@@ -233,7 +238,8 @@ class _MainPageState extends State<MainPage> {
         height: screenHeight,
       ));
     }
-    gridElement.add(ElevatedButton(onPressed: printDB, child: Text("test")));
+    gridElement.add(
+        ElevatedButton(onPressed: deleteDB, child: const Text("DeteleDB")));
     final fsb = FloatingSearchBar.of(context);
     double padding = 100;
     if (fsb != null) {

@@ -1,3 +1,4 @@
+import 'dart:ffi';
 import 'dart:io';
 import 'dart:math';
 import 'dart:ui';
@@ -50,10 +51,7 @@ class Classifier {
   /// Number of results to show
   static const int numResult = 10;
 
-  Classifier() {
-    loadModel();
-    loadLabels();
-  }
+  Classifier();
 
   Classifier.fromPointer({required this.interpreter, required this.labels}) {
     loadModelFromPointer();
@@ -83,6 +81,29 @@ class Classifier {
     } catch (e) {
       print("Error while loading labels: $e");
     }
+  }
+
+  Future<bool> load() async {
+    try {
+      interpreter = await Interpreter.fromAsset(
+        modelFileName,
+        options: InterpreterOptions()..threads = numThreads, //myOptions,
+      );
+
+      List<Tensor> outputTensors = interpreter.getOutputTensors();
+      //print("the length of the ouput Tensors is ${outputTensors.length}");
+      _outputShapes = [];
+      _outputTypes = [];
+      for (Tensor tensor in outputTensors) {
+        _outputShapes.add(tensor.shape);
+        _outputTypes.add(tensor.type);
+      }
+      labels = await FileUtil.loadLabels("assets/" + labelFileName);
+      print("model loaded");
+    } catch (e) {
+      print("Error while creating interpreter: $e");
+    }
+    return true;
   }
 
   /// Loads interpreter from asset
