@@ -9,6 +9,9 @@ import 'package:tflite_flutter/tflite_flutter.dart';
 import 'package:tflite_flutter_helper/tflite_flutter_helper.dart';
 
 import 'stats.dart';
+import 'package:path/path.dart' as p;
+import 'package:flutter_image_compress/flutter_image_compress.dart';
+import 'dart:typed_data';
 
 /// Classifier
 class Classifier {
@@ -349,14 +352,5 @@ class Classifier {
           inferenceTime: inferenceTimeElapsed,
           preProcessingTime: preProcessElapsedTime),
     };
-  }
-
-  Map<String, dynamic> predictFromPath(String filepath) {
-    image_lib.Image? img =
-        image_lib.decodeImage(File(filepath).readAsBytesSync());
-    if (img != null) {
-      return predict(img);
-    }
-    return {"error": "cannot read image"};
   }
 }

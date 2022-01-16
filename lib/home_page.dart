@@ -13,6 +13,10 @@ import 'tflite/classifier_yolov4.dart';
 import 'utils/isolate_utils.dart';
 import 'dart:isolate';
 import 'tflite/recognition.dart';
+import 'dart:typed_data';
+import 'package:flutter_image_compress/flutter_image_compress.dart';
+import 'package:path/path.dart' as p;
+import 'package:image/image.dart' as image_lib;
 
 class MainPage extends StatefulWidget {
   const MainPage({Key? key, required this.assetBox}) : super(key: key);
@@ -52,8 +56,21 @@ class _MainPageState extends State<MainPage> {
 
   /// Runs inference in another isolate
   Future<List<String>> inference(String filepath) async {
+    Uint8List? data = File(filepath).readAsBytesSync();
+    if (p.extension(filepath) == ".heic") {
+      data = await FlutterImageCompress.compressWithList(
+        data,
+        minWidth: 416,
+        minHeight: 416,
+        format: CompressFormat.jpeg,
+      );
+    }
+    image_lib.Image? img = image_lib.decodeImage(data);
+    if (img == null) {
+      return [];
+    }
     IsolateData isolateData = IsolateData(
-      filepath,
+      img,
       classifier.interpreter.address,
       classifier.labels,
     );
@@ -155,7 +172,7 @@ class _MainPageState extends State<MainPage> {
       }
     }
     Query<ImageData> query = widget.assetBox
-        .query(ImageData_.category.contains(queryCategory))
+        .query(ImageData_.mainCategory.equals(queryCategory))
         .build();
     ImageData? doc = query.findFirst();
     if (doc != null) {

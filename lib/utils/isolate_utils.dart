@@ -1,6 +1,7 @@
 import 'dart:isolate';
 import '../tflite/classifier_yolov4.dart';
 import 'package:tflite_flutter/tflite_flutter.dart';
+import 'package:image/image.dart' as image_lib;
 
 /// Manages separate Isolate instance for inference
 class IsolateUtils {
@@ -30,8 +31,7 @@ class IsolateUtils {
       Classifier classifier = Classifier.fromPointer(
           interpreter: Interpreter.fromAddress(isolateData.interpreterAddress),
           labels: isolateData.labels);
-      Map<String, dynamic> results =
-          classifier.predictFromPath(isolateData.filepath);
+      Map<String, dynamic> results = classifier.predict(isolateData.img);
       isolateData.responsePort.send(results);
     }
   }
@@ -39,13 +39,13 @@ class IsolateUtils {
 
 /// Bundles data to pass between Isolate
 class IsolateData {
-  late String filepath;
+  late image_lib.Image img;
   late int interpreterAddress;
   late List<String> labels;
   late SendPort responsePort;
 
   IsolateData(
-    this.filepath,
+    this.img,
     this.interpreterAddress,
     this.labels,
   );

@@ -42,6 +42,7 @@ dependencies:
   share_plus: ^3.0.4
   http: ^0.13.4
   material_floating_search_bar: ^0.3.6
+  flutter_image_compress: ^1.1.0
 
 dev_dependencies:
   flutter_test:

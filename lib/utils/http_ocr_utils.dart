@@ -1,10 +1,25 @@
+import 'dart:typed_data';
+
 import 'package:http/http.dart' as http;
+import 'package:flutter_image_compress/flutter_image_compress.dart';
+import 'dart:io';
 
 Future<String> requestOcr(String path) async {
   String text = "";
-  var request = http.MultipartRequest('POST',
-      Uri.parse("https://asia-southeast1-domacod.cloudfunctions.net/ocr"));
-  request.files.add(await http.MultipartFile.fromPath('file', path));
+  Uint8List? data = await FlutterImageCompress.compressWithFile(
+    path,
+    minWidth: 1600,
+    minHeight: 1600,
+    format: CompressFormat.jpeg,
+  );
+  if (data == null) {
+    return text;
+  }
+
+  var request = http.MultipartRequest(
+      'POST', Uri.parse("https://domacod.as.r.appspot.com/ocr"));
+  // request.files.add(await http.MultipartFile.fromPath('file', path));
+  request.files.add(http.MultipartFile.fromBytes('file', data));
 
   http.StreamedResponse response = await request.send();
 
