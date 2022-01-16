@@ -2,7 +2,6 @@ import 'dart:typed_data';
 
 import 'package:http/http.dart' as http;
 import 'package:flutter_image_compress/flutter_image_compress.dart';
-import 'dart:io';
 
 Future<String> requestOcr(String path) async {
   String text = "";
@@ -19,7 +18,8 @@ Future<String> requestOcr(String path) async {
   var request = http.MultipartRequest(
       'POST', Uri.parse("https://domacod.as.r.appspot.com/ocr"));
   // request.files.add(await http.MultipartFile.fromPath('file', path));
-  request.files.add(http.MultipartFile.fromBytes('file', data));
+  request.files
+      .add(http.MultipartFile.fromBytes('file', data, filename: "img.jpg"));
 
   http.StreamedResponse response = await request.send();
 
@@ -29,7 +29,8 @@ Future<String> requestOcr(String path) async {
   } else {
     print("Not 200 response ${response.reasonPhrase}");
     print("Not 200 response ${response.statusCode}");
-    print("Not 200 response ${response.stream.bytesToString()}");
+    print("Not 200 response ${await response.stream.bytesToString()}");
+    print("err");
   }
   return text;
 }

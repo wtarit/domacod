@@ -233,8 +233,8 @@ class _MainPageState extends State<MainPage> {
         height: screenHeight,
       ));
     }
-    gridElement
-        .add(ElevatedButton(onPressed: printDB, child: const Text("PrintDB")));
+    gridElement.add(
+        ElevatedButton(onPressed: deleteDB, child: const Text("DeleteDb")));
     double padding = 100;
     return GridView.count(
       padding: EdgeInsets.only(top: padding),
