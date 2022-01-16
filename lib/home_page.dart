@@ -152,31 +152,34 @@ class _MainPageState extends State<MainPage> {
     super.initState();
   }
 
-  // void printDB() {
-  //   Query<ImageData> query =
-  //       widget.assetBox.query(ImageData_.category.contains("Document")).build();
-  //   ImageData? doc = query.findFirst();
-  // }
+  void printDB() {
+    List<ImageData> dataBase = widget.assetBox.getAll();
+    print(dataBase);
+  }
 
   void deleteDB() {
     widget.assetBox.removeAll();
   }
 
   String queryImage(String queryCategory) {
+    Query<ImageData> query;
     if (queryCategory == "Recent") {
-      ImageData? data = widget.assetBox.query().build().findFirst();
-      if (data != null) {
-        return data.imagePath;
-      } else {
-        return "";
-      }
+      query = widget.assetBox.query().build();
+    } else {
+      query = widget.assetBox
+          .query(ImageData_.mainCategory.equals(queryCategory))
+          .build();
     }
-    Query<ImageData> query = widget.assetBox
-        .query(ImageData_.mainCategory.equals(queryCategory))
-        .build();
     ImageData? doc = query.findFirst();
-    if (doc != null) {
+
+    if (doc != null && File(doc.imagePath).existsSync()) {
       return doc.imagePath;
+    }
+    List<String> imagePaths = query.property(ImageData_.imagePath).find();
+    for (String imagePath in imagePaths) {
+      if (File(imagePath).existsSync()) {
+        return imagePath;
+      }
     }
     return "";
   }
@@ -230,8 +233,8 @@ class _MainPageState extends State<MainPage> {
         height: screenHeight,
       ));
     }
-    gridElement.add(
-        ElevatedButton(onPressed: deleteDB, child: const Text("DeteleDB")));
+    gridElement
+        .add(ElevatedButton(onPressed: printDB, child: const Text("PrintDB")));
     double padding = 100;
     return GridView.count(
       padding: EdgeInsets.only(top: padding),
