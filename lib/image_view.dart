@@ -28,6 +28,8 @@ class _GalleryPhotoViewWrapperState extends State<GalleryPhotoViewWrapper> {
 
   get primary => null;
 
+  get child => null;
+
   void shareImage() {
     Share.shareFiles([
       getAbsolutePath(widget.assets[currentIndex].relativePath,
@@ -138,16 +140,16 @@ class _GalleryPhotoViewWrapperState extends State<GalleryPhotoViewWrapper> {
   }
 
   final ButtonStyle raisedButtonStyle = ElevatedButton.styleFrom(
-    onPrimary: Colors.white,
-    primary: Colors.black.withOpacity(0.05),
-    alignment: Alignment.center,
-    minimumSize: Size(130, 70),
-  );
+      onPrimary: Colors.white,
+      primary: Colors.black.withOpacity(0.05),
+      alignment: Alignment.center,
+      fixedSize: Size(70, 70));
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       body: Stack(
+        alignment: AlignmentDirectional.bottomCenter,
         children: [
           PhotoViewGallery.builder(
             itemCount: widget.assets.length,
@@ -155,32 +157,26 @@ class _GalleryPhotoViewWrapperState extends State<GalleryPhotoViewWrapper> {
             pageController: widget.pageController,
             onPageChanged: onPageChanged,
           ),
-          Positioned(
-            bottom: 0,
-            left: 5,
-            right: 5,
-            child: Center(
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  ElevatedButton(
-                      style: raisedButtonStyle,
-                      onPressed: shareImage,
-                      child: Icon(Icons.share)),
-                  ElevatedButton(
-                    style: raisedButtonStyle,
-                    onPressed: deleteImage,
-                    child: Icon(Icons.delete),
-                  ),
-                  ElevatedButton(
-                    style: raisedButtonStyle,
-                    onPressed: _showBottomSheet,
-                    child: Icon(Icons.info_outline),
-                  )
-                ],
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+            children: <Widget>[
+              ElevatedButton(
+                style: raisedButtonStyle,
+                onPressed: shareImage,
+                child: Icon(Icons.share),
               ),
-            ),
-          )
+              ElevatedButton(
+                style: raisedButtonStyle,
+                onPressed: deleteImage,
+                child: Icon(Icons.delete),
+              ),
+              ElevatedButton(
+                style: raisedButtonStyle,
+                onPressed: _showBottomSheet,
+                child: Icon(Icons.info_outline),
+              )
+            ],
+          ),
         ],
       ),
     );
