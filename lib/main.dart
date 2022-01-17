@@ -2,9 +2,13 @@ import 'package:domacod/home_page.dart';
 import 'package:flutter/material.dart';
 import 'objectbox.dart';
 import 'image_data_models.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'onboarding_page.dart';
 
 /// Provides access to the ObjectBox Store throughout the app.
 late ObjectBox objectbox;
+// for open onBoarding page one time
+int? initScreen;
 
 Future<void> main() async {
   // This is required so ObjectBox can get the application directory
@@ -12,6 +16,12 @@ Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
   objectbox = await ObjectBox.create();
+
+  // for open onBoarding page one time
+  WidgetsFlutterBinding.ensureInitialized();
+  SharedPreferences preferences = await SharedPreferences.getInstance();
+  initScreen = await preferences.getInt("initScreen");
+  await preferences.setInt("initScreen", 1);
 
   runApp(const MyApp());
 }
@@ -23,8 +33,9 @@ class MyApp extends StatefulWidget {
   State<MyApp> createState() => _MyAppState();
 }
 
+final assetBox = objectbox.store.box<ImageData>();
+
 class _MyAppState extends State<MyApp> {
-  final assetBox = objectbox.store.box<ImageData>();
   @override
   void initState() {
     super.initState();
@@ -38,9 +49,13 @@ class _MyAppState extends State<MyApp> {
       theme: ThemeData(
         primarySwatch: Colors.blue,
       ),
-      home: MainPage(
-        assetBox: assetBox,
-      ),
+      initialRoute: initScreen == 0 || initScreen == null ? 'onboard' : 'home',
+      routes: {
+        'home': (context) => MainPage(
+              assetBox: assetBox,
+            ),
+        'onboard': (context) => OnBoardingPage(),
+      },
     );
   }
 }
