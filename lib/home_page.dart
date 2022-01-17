@@ -5,6 +5,7 @@ import 'package:domacod/objectbox.g.dart';
 import 'package:domacod/search_result_view.dart';
 import 'package:domacod/utils/http_ocr_utils.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:photo_manager/photo_manager.dart';
 import 'image_data_models.dart';
 import 'package:material_floating_search_bar/material_floating_search_bar.dart';
@@ -35,7 +36,57 @@ class _MainPageState extends State<MainPage> {
   late IsolateUtils isolateUtils;
   Classifier classifier = Classifier();
 
+  Future<void> _showPermissionDialog() async {
+    return showDialog<void>(
+      context: context,
+      barrierDismissible: false, // user must tap button!
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text('Grant Permission'),
+          content: SingleChildScrollView(
+            child: ListBody(
+              children: const <Widget>[
+                Text(
+                    "Domacod need storage permission in order to access your photo."),
+                Text(
+                    "To grant Domacod permission click open setting and allow storage access."),
+              ],
+            ),
+          ),
+          actions: <Widget>[
+            TextButton(
+              child: const Text('Quit App'),
+              onPressed: () {
+                // Navigator.of(context).pop();
+                SystemChannels.platform
+                    .invokeMethod<void>('SystemNavigator.pop');
+              },
+            ),
+            TextButton(
+              child: const Text('Open Settings'),
+              onPressed: () async {
+                PhotoManager.openSetting();
+                var result = await PhotoManager.requestPermissionExtend();
+                print("permission result $result");
+                if (result.isAuth) {
+                  Navigator.of(context).pop();
+                } else {
+                  SystemChannels.platform
+                      .invokeMethod<void>('SystemNavigator.pop');
+                }
+              },
+            ),
+          ],
+        );
+      },
+    );
+  }
+
   Future<List<AssetEntity>> _fetchAssets() async {
+    var result = await PhotoManager.requestPermissionExtend();
+    if (!result.isAuth) {
+      await _showPermissionDialog();
+    }
     // Set onlyAll to true, to fetch only the 'Recent' album
     // which contains all the photos/videos in the storage
     final albums = await PhotoManager.getAssetPathList(
