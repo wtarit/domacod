@@ -55,23 +55,6 @@ class _GalleryPhotoViewWrapperState extends State<GalleryPhotoViewWrapper> {
     });
   }
 
-  /*showInfo(context) {
-    showModalBottomSheet(
-        context: context,
-        backgroundColor: Colors.transparent,
-        builder: (context) => Container(
-              decoration: const BoxDecoration(
-                  color: Colors.black,
-                  borderRadius: BorderRadius.only(
-                    topLeft: Radius.circular(25),
-                    topRight: Radius.circular(25),
-                  )),
-                  child: Column(children: [
-                    Text("Info", style: TextStyle(color: Colors.white))
-                  ],)
-            ));
-  }*/
-
   Widget? _showBottomSheet() {
     showModalBottomSheet(
         context: context,
