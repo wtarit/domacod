@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:domacod/grid_image_view.dart';
 import 'package:domacod/objectbox.g.dart';
 import 'package:domacod/screen/disclaimer.dart';
+import 'package:domacod/screen/settings.dart';
 import 'package:domacod/search_result_view.dart';
 import 'package:domacod/utils/http_ocr_utils.dart';
 import 'package:flutter/material.dart';
@@ -170,13 +171,14 @@ class _MainPageState extends State<MainPage> {
         if (objdetectionResult.isNotEmpty) {
           mainCategory = objdetectionResult[0];
           if (mainCategory == "Document") {
-            requestOcr(newPaths[i])
-                .then((text) => widget.assetBox.putAsync(ImageData(
-                      imagePath: newPaths[i],
-                      mainCategory: mainCategory,
-                      category: objdetectionResult,
-                      text: text,
-                    )));
+            requestOcr(newPaths[i]).then((text) {
+              widget.assetBox.putAsync(ImageData(
+                imagePath: newPaths[i],
+                mainCategory: mainCategory,
+                category: objdetectionResult,
+                text: text,
+              ));
+            });
           } else {
             widget.assetBox.putAsync(ImageData(
               imagePath: newPaths[i],
@@ -212,7 +214,7 @@ class _MainPageState extends State<MainPage> {
 
   void printDB() {
     List<ImageData> dataBase = widget.assetBox.getAll();
-    print(dataBase);
+    print(dataBase.length);
   }
 
   void deleteDB() {
@@ -276,25 +278,34 @@ class _MainPageState extends State<MainPage> {
                           category: category,
                         )));
           },
-          child: GridTile(
-            child: img,
-            footer: GridTileBar(
-              backgroundColor: Colors.black,
-              title: Text(category),
+          child: ClipRRect(
+            borderRadius: const BorderRadius.all(Radius.circular(7)),
+            child: GridTile(
+              child: img,
+              footer: GridTileBar(
+                backgroundColor: Colors.black,
+                title: Row(
+                  children: [
+                    Text(category),
+                    const Spacer(),
+                    Text("amount"),
+                  ],
+                ),
+              ),
             ),
           ),
         ));
       }
     }
     if (busy) {
-      gridElement.add(Container(
-        height: screenHeight,
-      ));
+      gridElement.add(Container());
     }
-    gridElement.add(
-        ElevatedButton(onPressed: deleteDB, child: const Text("DeleteDb")));
+    gridElement
+        .add(ElevatedButton(onPressed: printDB, child: const Text("printDB")));
     double padding = 100;
     return GridView.count(
+      mainAxisSpacing: 5,
+      crossAxisSpacing: 5,
       padding: EdgeInsets.only(top: padding),
       // shrinkWrap: true,
       crossAxisCount: 2,
@@ -363,19 +374,24 @@ class _MainPageState extends State<MainPage> {
               child: Text('Domacod'),
             ),
             ListTile(
-              title: const Text('Item 1'),
+              leading: const Icon(Icons.settings),
+              title: const Text('Settings'),
               onTap: () {
-                // Update the state of the app.
-                // ...
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                      builder: (context) => const SettingsScreen()),
+                );
               },
             ),
             ListTile(
+              leading: const Icon(Icons.help),
               title: const Text('Disclaimer'),
               onTap: () {
                 Navigator.push(
                   context,
                   MaterialPageRoute(
-                      builder: (context) => const DisclaimerView()),
+                      builder: (context) => const DisclaimerScreen()),
                 );
               },
             ),

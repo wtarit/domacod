@@ -18,9 +18,8 @@ Future<void> main() async {
   objectbox = await ObjectBox.create();
 
   // for open onBoarding page one time
-  WidgetsFlutterBinding.ensureInitialized();
   SharedPreferences preferences = await SharedPreferences.getInstance();
-  initScreen = await preferences.getInt("initScreen");
+  initScreen = preferences.getInt("initScreen");
   await preferences.setInt("initScreen", 1);
 
   runApp(const MyApp());
@@ -54,7 +53,7 @@ class _MyAppState extends State<MyApp> {
         'home': (context) => MainPage(
               assetBox: assetBox,
             ),
-        'onboard': (context) => OnBoardingPage(),
+        'onboard': (context) => const OnBoardingPage(),
       },
     );
   }
