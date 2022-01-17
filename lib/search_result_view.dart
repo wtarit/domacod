@@ -23,10 +23,6 @@ class SearchResultView extends StatefulWidget {
 class _SearchResultViewState extends State<SearchResultView> {
   List<AssetEntity> toShow = [];
   void fetchImageToShow() {
-    print(widget.query);
-    ImageData test = widget.assetBox.getAll()[1];
-    print(test);
-
     Query<ImageData> query = widget.assetBox
         .query(ImageData_.text.contains(widget.query, caseSensitive: false))
         .build();

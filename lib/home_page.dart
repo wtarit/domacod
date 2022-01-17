@@ -2,6 +2,7 @@ import 'dart:io';
 
 import 'package:domacod/grid_image_view.dart';
 import 'package:domacod/objectbox.g.dart';
+import 'package:domacod/screen/disclaimer.dart';
 import 'package:domacod/search_result_view.dart';
 import 'package:domacod/utils/http_ocr_utils.dart';
 import 'package:flutter/material.dart';
@@ -169,15 +170,23 @@ class _MainPageState extends State<MainPage> {
         if (objdetectionResult.isNotEmpty) {
           mainCategory = objdetectionResult[0];
           if (mainCategory == "Document") {
-            text = await requestOcr(newPaths[i]);
+            requestOcr(newPaths[i])
+                .then((text) => widget.assetBox.putAsync(ImageData(
+                      imagePath: newPaths[i],
+                      mainCategory: mainCategory,
+                      category: objdetectionResult,
+                      text: text,
+                    )));
+          } else {
+            widget.assetBox.putAsync(ImageData(
+              imagePath: newPaths[i],
+              mainCategory: mainCategory,
+              category: objdetectionResult,
+              text: text,
+            ));
           }
         }
-        await widget.assetBox.putAsync(ImageData(
-          imagePath: newPaths[i],
-          mainCategory: mainCategory,
-          category: objdetectionResult,
-          text: text,
-        ));
+
         setState(() {
           processed++;
         });
@@ -342,13 +351,39 @@ class _MainPageState extends State<MainPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      drawer: Drawer(
+        child: ListView(
+          // Important: Remove any padding from the ListView.
+          padding: EdgeInsets.zero,
+          children: [
+            const DrawerHeader(
+              decoration: BoxDecoration(
+                color: Colors.blue,
+              ),
+              child: Text('Domacod'),
+            ),
+            ListTile(
+              title: const Text('Item 1'),
+              onTap: () {
+                // Update the state of the app.
+                // ...
+              },
+            ),
+            ListTile(
+              title: const Text('Disclaimer'),
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                      builder: (context) => const DisclaimerView()),
+                );
+              },
+            ),
+          ],
+        ),
+      ),
       body: FloatingSearchBar(
         controller: controller,
-        // body: FloatingSearchBarScrollNotifier(
-        //   child: SearchResultView(
-        //       // searchTerm: selectedTerm,
-        //       ),
-        // ),
         body: Stack(children: [
           categoryGrid(),
           Positioned(
@@ -397,13 +432,14 @@ class _MainPageState extends State<MainPage> {
           });
           controller.close();
           Navigator.push(
-              context,
-              MaterialPageRoute(
-                  builder: (context) => SearchResultView(
-                        query: query,
-                        assetBox: widget.assetBox,
-                        assets: assets,
-                      )));
+            context,
+            MaterialPageRoute(
+                builder: (context) => SearchResultView(
+                      query: query,
+                      assetBox: widget.assetBox,
+                      assets: assets,
+                    )),
+          );
         },
         builder: (context, transition) {
           return ClipRRect(
