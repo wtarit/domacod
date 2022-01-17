@@ -166,10 +166,8 @@ class _MainPageState extends State<MainPage> {
     for (int i = 0; i < newPaths.length; i++) {
       if (!dbPaths.contains(newPaths[i])) {
         List<String> objdetectionResult = await inference(newPaths[i]);
-        String text = "";
-        String mainCategory = "";
         if (objdetectionResult.isNotEmpty) {
-          mainCategory = objdetectionResult[0];
+          String mainCategory = objdetectionResult[0];
           if (mainCategory == "Document") {
             requestOcr(newPaths[i]).then((text) {
               widget.assetBox.putAsync(ImageData(
@@ -184,9 +182,16 @@ class _MainPageState extends State<MainPage> {
               imagePath: newPaths[i],
               mainCategory: mainCategory,
               category: objdetectionResult,
-              text: text,
+              text: "",
             ));
           }
+        } else {
+          widget.assetBox.putAsync(ImageData(
+            imagePath: newPaths[i],
+            mainCategory: "",
+            category: objdetectionResult,
+            text: "",
+          ));
         }
 
         setState(() {
@@ -215,6 +220,7 @@ class _MainPageState extends State<MainPage> {
   void printDB() {
     List<ImageData> dataBase = widget.assetBox.getAll();
     print(dataBase.length);
+    print(assets.length);
   }
 
   void deleteDB() {
