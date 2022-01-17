@@ -82,7 +82,7 @@ class _MainPageState extends State<MainPage> {
     );
   }
 
-  Future<List<AssetEntity>> _fetchAssets() async {
+  Future<void> _fetchAssets() async {
     var result = await PhotoManager.requestPermissionExtend();
     if (!result.isAuth) {
       await _showPermissionDialog();
@@ -100,9 +100,7 @@ class _MainPageState extends State<MainPage> {
       );
       // Update the state and notify UI
       setState(() => assets = recentAssets);
-      return recentAssets;
     }
-    return [];
   }
 
   /// Runs inference in another isolate
@@ -171,7 +169,7 @@ class _MainPageState extends State<MainPage> {
         if (objdetectionResult.isNotEmpty) {
           mainCategory = objdetectionResult[0];
           if (mainCategory == "Document") {
-            requestOcr(newPaths[i]);
+            text = await requestOcr(newPaths[i]);
           }
         }
         await widget.assetBox.putAsync(ImageData(
@@ -403,6 +401,8 @@ class _MainPageState extends State<MainPage> {
               MaterialPageRoute(
                   builder: (context) => SearchResultView(
                         query: query,
+                        assetBox: widget.assetBox,
+                        assets: assets,
                       )));
         },
         builder: (context, transition) {
