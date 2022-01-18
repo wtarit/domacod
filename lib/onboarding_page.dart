@@ -46,8 +46,9 @@ class OnBoardingPage extends StatelessWidget {
       );
 
   PageDecoration getPageDecoration() => const PageDecoration(
-        titleTextStyle: TextStyle(fontSize: 28, fontWeight: FontWeight.bold),
-        bodyTextStyle: TextStyle(fontSize: 20),
+        titleTextStyle: TextStyle(
+            fontSize: 28, fontWeight: FontWeight.bold, color: Colors.black),
+        bodyTextStyle: TextStyle(fontSize: 20, color: Colors.black),
         //descriptionPadding: EdgeInsets.all(16).copyWith(bottom: 0),
         pageColor: Colors.white,
       );
