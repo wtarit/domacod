@@ -45,9 +45,7 @@ class _MyAppState extends State<MyApp> {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       title: 'Domacod',
-      theme: ThemeData(
-        primarySwatch: Colors.blue,
-      ),
+      theme: ThemeData.dark(),
       initialRoute: initScreen == 0 || initScreen == null ? 'onboard' : 'home',
       routes: {
         'home': (context) => MainPage(

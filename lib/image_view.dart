@@ -128,39 +128,50 @@ class _GalleryPhotoViewWrapperState extends State<GalleryPhotoViewWrapper> {
       alignment: Alignment.center,
       fixedSize: Size(70, 70));
 
+  var isVisible = true;
+
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      body: Stack(
-        alignment: AlignmentDirectional.bottomCenter,
-        children: [
-          PhotoViewGallery.builder(
-            itemCount: widget.assets.length,
-            builder: _buildItem,
-            pageController: widget.pageController,
-            onPageChanged: onPageChanged,
-          ),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-            children: <Widget>[
-              ElevatedButton(
-                style: raisedButtonStyle,
-                onPressed: shareImage,
-                child: Icon(Icons.share),
-              ),
-              ElevatedButton(
-                style: raisedButtonStyle,
-                onPressed: deleteImage,
-                child: Icon(Icons.delete),
-              ),
-              ElevatedButton(
-                style: raisedButtonStyle,
-                onPressed: _showBottomSheet,
-                child: Icon(Icons.info_outline),
-              )
-            ],
-          ),
-        ],
+    return InkWell(
+      onTap: () {
+        setState(() {
+          isVisible = !isVisible;
+        });
+      },
+      child: Scaffold(
+        body: Stack(
+          alignment: AlignmentDirectional.bottomCenter,
+          children: [
+            PhotoViewGallery.builder(
+              itemCount: widget.assets.length,
+              builder: _buildItem,
+              pageController: widget.pageController,
+              onPageChanged: onPageChanged,
+            ),
+            isVisible
+                ? Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                    children: <Widget>[
+                      ElevatedButton(
+                        style: raisedButtonStyle,
+                        onPressed: shareImage,
+                        child: Icon(Icons.share),
+                      ),
+                      ElevatedButton(
+                        style: raisedButtonStyle,
+                        onPressed: deleteImage,
+                        child: Icon(Icons.delete),
+                      ),
+                      ElevatedButton(
+                        style: raisedButtonStyle,
+                        onPressed: _showBottomSheet,
+                        child: Icon(Icons.info_outline),
+                      ),
+                    ],
+                  )
+                : Row(),
+          ],
+        ),
       ),
     );
   }
