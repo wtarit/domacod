@@ -45,6 +45,7 @@ dependencies:
   flutter_image_compress: ^1.1.0
   introduction_screen: ^2.1.0
   shared_preferences: ^2.0.12
+  settings_ui: ^2.0.1
 
 dev_dependencies:
   flutter_test:

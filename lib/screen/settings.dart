@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:settings_ui/settings_ui.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class SettingsScreen extends StatefulWidget {
   const SettingsScreen({Key? key}) : super(key: key);
@@ -8,14 +10,48 @@ class SettingsScreen extends StatefulWidget {
 }
 
 class _SettingsScreenState extends State<SettingsScreen> {
+  final Future<SharedPreferences> _prefs = SharedPreferences.getInstance();
+  bool useOCR = true;
+  @override
+  void initState() {
+    _prefs.then((SharedPreferences prefs) async {
+      setState(() {
+        useOCR = prefs.getBool('useOCR') ?? true;
+      });
+    });
+    super.initState();
+  }
+
+  Future<void> toggleOCR(bool value) async {
+    final SharedPreferences prefs = await _prefs;
+    prefs.setBool("useOCR", value);
+    setState(() {
+      useOCR = value;
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         title: const Text("Settings"),
       ),
-      //TODO: implement an OCR settings
-      body: const Text("settings"),
+      body: SettingsList(
+        sections: [
+          SettingsSection(tiles: [
+            SettingsTile.switchTile(
+              initialValue: useOCR,
+              onToggle: (value) {
+                toggleOCR(value);
+              },
+              title: const Text("Use OCR"),
+              description: const Text(
+                  "Use online OCR service for charactor recognition."),
+              leading: const Icon(Icons.search),
+            ),
+          ])
+        ],
+      ),
     );
   }
 }
