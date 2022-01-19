@@ -50,10 +50,8 @@ class _GridImageViewState extends State<GridImageView> {
         title: Text(widget.category),
       ),
       body: GridView.builder(
-        gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-          // A grid view with 3 items per row
-          crossAxisCount: 3,
-        ),
+        gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(
+            maxCrossAxisExtent: 140),
         itemCount: toShow.length,
         itemBuilder: (_, index) {
           return AssetThumbnail(

@@ -251,6 +251,7 @@ class _MainPageState extends State<MainPage> {
   }
 
   Widget categoryGrid() {
+    double width = MediaQuery.of(context).size.width;
     List<String> categories = [
       "Recent",
       "Document",
@@ -314,7 +315,7 @@ class _MainPageState extends State<MainPage> {
       crossAxisSpacing: 5,
       padding: EdgeInsets.only(top: padding),
       // shrinkWrap: true,
-      crossAxisCount: 2,
+      crossAxisCount: width ~/ 200,
       children: gridElement,
     );
   }
