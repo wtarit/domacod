@@ -25,6 +25,7 @@ class GalleryPhotoViewWrapper extends StatefulWidget {
 
 class _GalleryPhotoViewWrapperState extends State<GalleryPhotoViewWrapper> {
   late int currentIndex = widget.index;
+  bool showButton = true;
 
   get primary => null;
 
@@ -122,7 +123,7 @@ class _GalleryPhotoViewWrapperState extends State<GalleryPhotoViewWrapper> {
         });
   }
 
-  final ButtonStyle raisedButtonStyle = ElevatedButton.styleFrom(
+  final ButtonStyle buttonStyle = ElevatedButton.styleFrom(
       onPrimary: Colors.white,
       primary: Colors.black.withOpacity(0.05),
       alignment: Alignment.center,
@@ -130,6 +131,7 @@ class _GalleryPhotoViewWrapperState extends State<GalleryPhotoViewWrapper> {
 
   @override
   Widget build(BuildContext context) {
+    double width = MediaQuery.of(context).size.width;
     return Scaffold(
       body: Stack(
         alignment: AlignmentDirectional.bottomCenter,
@@ -140,26 +142,28 @@ class _GalleryPhotoViewWrapperState extends State<GalleryPhotoViewWrapper> {
             pageController: widget.pageController,
             onPageChanged: onPageChanged,
           ),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-            children: <Widget>[
-              ElevatedButton(
-                style: raisedButtonStyle,
-                onPressed: shareImage,
-                child: Icon(Icons.share),
-              ),
-              ElevatedButton(
-                style: raisedButtonStyle,
-                onPressed: deleteImage,
-                child: Icon(Icons.delete),
-              ),
-              ElevatedButton(
-                style: raisedButtonStyle,
-                onPressed: _showBottomSheet,
-                child: Icon(Icons.info_outline),
-              )
-            ],
-          ),
+          showButton
+              ? Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                  children: <Widget>[
+                    ElevatedButton(
+                      style: buttonStyle,
+                      onPressed: shareImage,
+                      child: const Icon(Icons.share),
+                    ),
+                    ElevatedButton(
+                      style: buttonStyle,
+                      onPressed: deleteImage,
+                      child: const Icon(Icons.delete),
+                    ),
+                    ElevatedButton(
+                      style: buttonStyle,
+                      onPressed: _showBottomSheet,
+                      child: const Icon(Icons.info_outline),
+                    )
+                  ],
+                )
+              : Container(),
         ],
       ),
     );
@@ -174,11 +178,18 @@ class _GalleryPhotoViewWrapperState extends State<GalleryPhotoViewWrapper> {
           if (file == null) {
             return Container();
           }
-          return PhotoView(
-            imageProvider: FileImage(file),
-            initialScale: PhotoViewComputedScale.contained,
-            minScale: PhotoViewComputedScale.contained,
-            maxScale: PhotoViewComputedScale.covered * 4,
+          return InkWell(
+            onTap: () {
+              setState(() {
+                showButton = !showButton;
+              });
+            },
+            child: PhotoView(
+              imageProvider: FileImage(file),
+              initialScale: PhotoViewComputedScale.contained,
+              minScale: PhotoViewComputedScale.contained,
+              maxScale: PhotoViewComputedScale.covered * 4,
+            ),
           );
         },
       ),

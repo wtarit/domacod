@@ -27,12 +27,13 @@ class AssetThumbnail extends StatelessWidget {
         return InkWell(
             onTap: () {
               Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                      builder: (context) => GalleryPhotoViewWrapper(
-                            assets: assets,
-                            index: index,
-                          )));
+                context,
+                MaterialPageRoute(
+                    builder: (context) => GalleryPhotoViewWrapper(
+                          assets: assets,
+                          index: index,
+                        )),
+              );
             },
             child: Image.memory(bytes, fit: BoxFit.cover));
       },
