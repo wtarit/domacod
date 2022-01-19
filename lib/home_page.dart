@@ -375,7 +375,7 @@ class _MainPageState extends State<MainPage> {
           children: [
             const DrawerHeader(
               decoration: BoxDecoration(
-                color: Colors.blue,
+                color: Colors.teal,
               ),
               child: Text('Domacod'),
             ),

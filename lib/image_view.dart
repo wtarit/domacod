@@ -129,6 +129,8 @@ class _GalleryPhotoViewWrapperState extends State<GalleryPhotoViewWrapper> {
       alignment: Alignment.center,
       fixedSize: Size(70, 70));
 
+  var isVisible = true;
+
   @override
   Widget build(BuildContext context) {
     double width = MediaQuery.of(context).size.width;
