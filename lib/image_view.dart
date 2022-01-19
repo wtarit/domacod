@@ -1,5 +1,5 @@
-import 'package:domacod/grid_image_view.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:photo_manager/photo_manager.dart';
 import 'package:photo_view/photo_view.dart';
 import 'package:photo_view/photo_view_gallery.dart';
@@ -27,9 +27,10 @@ class _GalleryPhotoViewWrapperState extends State<GalleryPhotoViewWrapper> {
   late int currentIndex = widget.index;
   bool showButton = true;
 
-  get primary => null;
-
-  get child => null;
+  @override
+  void initState() {
+    super.initState();
+  }
 
   void shareImage() {
     Share.shareFiles([
@@ -123,18 +124,22 @@ class _GalleryPhotoViewWrapperState extends State<GalleryPhotoViewWrapper> {
         });
   }
 
-  final ButtonStyle buttonStyle = ElevatedButton.styleFrom(
-      onPrimary: Colors.white,
-      primary: Colors.black.withOpacity(0.05),
-      alignment: Alignment.center,
-      fixedSize: Size(70, 70));
-
-  var isVisible = true;
+  final ButtonStyle buttonStyle = TextButton.styleFrom(
+    primary: Colors.white,
+    alignment: Alignment.center,
+  );
 
   @override
   Widget build(BuildContext context) {
-    double width = MediaQuery.of(context).size.width;
     return Scaffold(
+      extendBodyBehindAppBar: true,
+      extendBody: true,
+      resizeToAvoidBottomInset: false,
+      appBar: showButton
+          ? AppBar(
+              backgroundColor: Colors.black.withOpacity(0.05),
+            )
+          : null,
       body: Stack(
         alignment: AlignmentDirectional.bottomCenter,
         children: [
@@ -145,25 +150,34 @@ class _GalleryPhotoViewWrapperState extends State<GalleryPhotoViewWrapper> {
             onPageChanged: onPageChanged,
           ),
           showButton
-              ? Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                  children: <Widget>[
-                    ElevatedButton(
-                      style: buttonStyle,
-                      onPressed: shareImage,
-                      child: const Icon(Icons.share),
-                    ),
-                    ElevatedButton(
-                      style: buttonStyle,
-                      onPressed: deleteImage,
-                      child: const Icon(Icons.delete),
-                    ),
-                    ElevatedButton(
-                      style: buttonStyle,
-                      onPressed: _showBottomSheet,
-                      child: const Icon(Icons.info_outline),
-                    )
-                  ],
+              ? Container(
+                  color: Colors.black.withOpacity(0.5),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                    children: <Widget>[
+                      Expanded(
+                        child: TextButton(
+                          style: buttonStyle,
+                          onPressed: shareImage,
+                          child: const Icon(Icons.share),
+                        ),
+                      ),
+                      Expanded(
+                        child: TextButton(
+                          style: buttonStyle,
+                          onPressed: deleteImage,
+                          child: const Icon(Icons.delete),
+                        ),
+                      ),
+                      Expanded(
+                        child: TextButton(
+                          style: buttonStyle,
+                          onPressed: _showBottomSheet,
+                          child: const Icon(Icons.info_outline),
+                        ),
+                      )
+                    ],
+                  ),
                 )
               : Container(),
         ],
@@ -184,6 +198,13 @@ class _GalleryPhotoViewWrapperState extends State<GalleryPhotoViewWrapper> {
             onTap: () {
               setState(() {
                 showButton = !showButton;
+                if (showButton) {
+                  SystemChrome.setEnabledSystemUIMode(SystemUiMode.manual,
+                      overlays: [SystemUiOverlay.bottom, SystemUiOverlay.top]);
+                } else {
+                  SystemChrome.setEnabledSystemUIMode(SystemUiMode.manual,
+                      overlays: []);
+                }
               });
             },
             child: PhotoView(
@@ -196,5 +217,12 @@ class _GalleryPhotoViewWrapperState extends State<GalleryPhotoViewWrapper> {
         },
       ),
     );
+  }
+
+  @override
+  void dispose() {
+    SystemChrome.setEnabledSystemUIMode(SystemUiMode.manual,
+        overlays: [SystemUiOverlay.bottom, SystemUiOverlay.top]);
+    super.dispose();
   }
 }
