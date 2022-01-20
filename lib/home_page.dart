@@ -20,6 +20,7 @@ import 'dart:typed_data';
 import 'package:flutter_image_compress/flutter_image_compress.dart';
 import 'package:path/path.dart' as p;
 import 'package:image/image.dart' as image_lib;
+import 'package:shared_preferences/shared_preferences.dart';
 
 class MainPage extends StatefulWidget {
   const MainPage({Key? key, required this.assetBox}) : super(key: key);
@@ -37,7 +38,8 @@ class _MainPageState extends State<MainPage> {
   int processed = 0;
   late IsolateUtils isolateUtils;
   Classifier classifier = Classifier();
-
+  final Future<SharedPreferences> _prefs = SharedPreferences.getInstance();
+  bool useOCR = true;
   Future<void> _showPermissionDialog() async {
     return showDialog<void>(
       context: context,
@@ -168,13 +170,14 @@ class _MainPageState extends State<MainPage> {
         List<String> objdetectionResult = await inference(newPaths[i]);
         if (objdetectionResult.isNotEmpty) {
           String mainCategory = objdetectionResult[0];
-          if (mainCategory == "Document") {
+          if (mainCategory == "Document" && useOCR) {
             requestOcr(newPaths[i]).then((text) {
               widget.assetBox.putAsync(ImageData(
                 imagePath: newPaths[i],
                 mainCategory: mainCategory,
                 category: objdetectionResult,
                 text: text,
+                doneOCR: true,
               ));
             });
           } else {
@@ -183,6 +186,7 @@ class _MainPageState extends State<MainPage> {
               mainCategory: mainCategory,
               category: objdetectionResult,
               text: "",
+              doneOCR: false,
             ));
           }
         } else {
@@ -191,6 +195,7 @@ class _MainPageState extends State<MainPage> {
             mainCategory: "",
             category: objdetectionResult,
             text: "",
+            doneOCR: false,
           ));
         }
 
@@ -209,6 +214,11 @@ class _MainPageState extends State<MainPage> {
     controller = FloatingSearchBarController();
     isolateUtils = IsolateUtils();
     isolateUtils.start();
+    _prefs.then((SharedPreferences prefs) async {
+      setState(() {
+        useOCR = prefs.getBool('useOCR') ?? true;
+      });
+    });
     _fetchAssets().then((data) {
       classifier.load().then((data) {
         addDB();
@@ -309,13 +319,15 @@ class _MainPageState extends State<MainPage> {
     }
     gridElement
         .add(ElevatedButton(onPressed: printDB, child: const Text("printDB")));
+    gridElement.add(
+        ElevatedButton(onPressed: deleteDB, child: const Text("DeleteDB")));
     double padding = 100;
     return GridView.count(
       mainAxisSpacing: 5,
       crossAxisSpacing: 5,
       padding: EdgeInsets.only(top: padding),
       // shrinkWrap: true,
-      crossAxisCount: width ~/ 200,
+      crossAxisCount: width ~/ 180,
       children: gridElement,
     );
   }
