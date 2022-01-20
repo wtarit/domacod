@@ -9,9 +9,11 @@ class SettingsScreen extends StatefulWidget {
   _SettingsScreenState createState() => _SettingsScreenState();
 }
 
+bool useOCR = true;
+
 class _SettingsScreenState extends State<SettingsScreen> {
   final Future<SharedPreferences> _prefs = SharedPreferences.getInstance();
-  bool useOCR = true;
+
   @override
   void initState() {
     _prefs.then((SharedPreferences prefs) async {

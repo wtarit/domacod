@@ -51,7 +51,7 @@ class _MyAppState extends State<MyApp> {
         'home': (context) => MainPage(
               assetBox: assetBox,
             ),
-        'onboard': (context) => const OnBoardingPage(),
+        'onboard': (context) => OnBoardingPage(),
       },
     );
   }
