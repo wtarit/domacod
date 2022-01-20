@@ -8,9 +8,9 @@ String getAbsolutePath(String? relpath, String? fname) {
       path = p.join("/storage/emulated/0/", path);
     }
   } else if (relpath == null && fname != null) {
-    path = p.join(fname);
+    path = p.join(fname); // use only file name
   } else if (relpath != null && fname == null) {
-    path = p.join(relpath);
+    path = p.join(relpath); // use only file path
   }
   return path;
 }

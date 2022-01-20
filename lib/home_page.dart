@@ -390,7 +390,12 @@ class _MainPageState extends State<MainPage> {
               decoration: BoxDecoration(
                 color: Colors.teal,
               ),
-              child: Text('Domacod'),
+              child: Text(
+                'Domacod',
+                style: TextStyle(
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
             ),
             ListTile(
               leading: const Icon(Icons.settings),
@@ -434,7 +439,8 @@ class _MainPageState extends State<MainPage> {
                       children: [
                         const CircularProgressIndicator(),
                         const Spacer(),
-                        Text("Indexed $processed of ${assets.length}"),
+                        Text("Indexed $processed of ${assets.length}",
+                            style: const TextStyle(color: Colors.black)),
                         const Spacer(
                           flex: 2,
                         ),
@@ -478,9 +484,9 @@ class _MainPageState extends State<MainPage> {
         },
         builder: (context, transition) {
           return ClipRRect(
-            borderRadius: BorderRadius.circular(8),
+            borderRadius: BorderRadius.circular(20),
             child: Material(
-              color: Colors.white,
+              color: Colors.black87,
               elevation: 4,
               child: Builder(
                 builder: (context) {
