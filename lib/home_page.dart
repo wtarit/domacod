@@ -71,7 +71,6 @@ class _MainPageState extends State<MainPage> {
               onPressed: () async {
                 PhotoManager.openSetting();
                 var result = await PhotoManager.requestPermissionExtend();
-                print("permission result $result");
                 if (result.isAuth) {
                   Navigator.of(context).pop();
                 } else {
@@ -237,27 +236,30 @@ class _MainPageState extends State<MainPage> {
     widget.assetBox.removeAll();
   }
 
-  String queryImage(String queryCategory) {
+  Map<String, dynamic> queryImage(String queryCategory) {
+    int amount = 0;
     Query<ImageData> query;
     if (queryCategory == "Recent") {
       query = widget.assetBox.query().build();
+      amount = assets.length;
     } else {
       query = widget.assetBox
           .query(ImageData_.mainCategory.equals(queryCategory))
           .build();
+      amount = query.count();
     }
     ImageData? doc = query.findFirst();
 
     if (doc != null && File(doc.imagePath).existsSync()) {
-      return doc.imagePath;
+      return {"path": doc.imagePath, "amount": amount};
     }
     List<String> imagePaths = query.property(ImageData_.imagePath).find();
     for (String imagePath in imagePaths) {
       if (File(imagePath).existsSync()) {
-        return imagePath;
+        return {"path": imagePath, "amount": amount};
       }
     }
-    return "";
+    return {"path": "", "amount": amount};
   }
 
   Widget categoryGrid() {
@@ -277,11 +279,11 @@ class _MainPageState extends State<MainPage> {
     ];
     List<Widget> gridElement = [];
     for (String category in categories) {
-      String imgPath = queryImage(category);
+      Map<String, dynamic> imgPath = queryImage(category);
       late Widget img;
-      if (imgPath.isNotEmpty) {
+      if (imgPath["path"].isNotEmpty) {
         img = Image.file(
-          File(imgPath),
+          File(imgPath["path"]),
           fit: BoxFit.cover,
         );
         gridElement.add(InkWell(
@@ -305,7 +307,7 @@ class _MainPageState extends State<MainPage> {
                   children: [
                     Text(category),
                     const Spacer(),
-                    Text("amount"),
+                    Text("${imgPath["amount"]}"),
                   ],
                 ),
               ),
