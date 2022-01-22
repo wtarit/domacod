@@ -4,17 +4,17 @@ import 'package:domacod/objectbox.g.dart';
 import 'image_data_models.dart';
 import 'utils/path_utils.dart';
 import 'widgets/thumbnail_view.dart';
+import 'providers/database_provider.dart';
+import 'package:provider/provider.dart';
 
 class SearchResultView extends StatefulWidget {
   const SearchResultView({
     Key? key,
     required this.assets,
-    required this.assetBox,
     required this.query,
   }) : super(key: key);
   final String query;
   final List<AssetEntity> assets;
-  final Box<ImageData> assetBox;
 
   @override
   _SearchResultViewState createState() => _SearchResultViewState();
@@ -23,11 +23,11 @@ class SearchResultView extends StatefulWidget {
 class _SearchResultViewState extends State<SearchResultView> {
   List<AssetEntity> toShow = [];
   void fetchImageToShow() {
-    Query<ImageData> query = widget.assetBox
+    Box<ImageData> assetsBox = context.watch<DatabaseProvider>().getDB;
+    Query<ImageData> query = assetsBox
         .query(ImageData_.text.contains(widget.query, caseSensitive: false))
         .build();
     List<String> filename = query.property(ImageData_.imagePath).find();
-    print(filename.length);
     toShow = widget.assets
         .where(
             (e) => filename.contains(getAbsolutePath(e.relativePath, e.title)))
@@ -36,12 +36,12 @@ class _SearchResultViewState extends State<SearchResultView> {
 
   @override
   void initState() {
-    fetchImageToShow();
     super.initState();
   }
 
   @override
   Widget build(BuildContext context) {
+    fetchImageToShow();
     return Scaffold(
       appBar: AppBar(
         title: Text(widget.query),

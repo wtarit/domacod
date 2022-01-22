@@ -52,12 +52,13 @@ class _GalleryPhotoViewWrapperState extends State<GalleryPhotoViewWrapper> {
     widget.assets.removeWhere((element) => element.id == deleteID);
     if (result.isNotEmpty) {
       context.read<DatabaseProvider>().deleteDBbyPath(deletePath);
+      if (widget.assets.isEmpty) {
+        Navigator.pop(context);
+      }
       setState(() {
-        // if (currentIndex < widget.assets.length) {
-        //   currentIndex++;
-        //   widget.pageController.nextPage(
-        //       duration: const Duration(milliseconds: 500), curve: Curves.ease);
-        // }
+        if (currentIndex == widget.assets.length) {
+          currentIndex--;
+        }
       });
     }
   }

@@ -484,7 +484,6 @@ class _MainPageState extends State<MainPage> {
             MaterialPageRoute(
                 builder: (context) => SearchResultView(
                       query: query,
-                      assetBox: widget.assetsBox,
                       assets: assets,
                     )),
           );
@@ -543,10 +542,16 @@ class _MainPageState extends State<MainPage> {
                                 },
                               ),
                               onTap: () {
-                                setState(() {
-                                  putSearchTermFirst(term);
-                                  selectedTerm = term;
-                                });
+                                putSearchTermFirst(term);
+                                // selectedTerm = term;
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                      builder: (context) => SearchResultView(
+                                            query: term,
+                                            assets: assets,
+                                          )),
+                                );
                                 controller.close();
                               },
                             ),
