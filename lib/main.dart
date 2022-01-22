@@ -1,5 +1,7 @@
 import 'package:domacod/home_page.dart';
+import 'package:domacod/providers/database_provider.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'objectbox.dart';
 import 'image_data_models.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -32,27 +34,30 @@ class MyApp extends StatefulWidget {
   State<MyApp> createState() => _MyAppState();
 }
 
-final assetBox = objectbox.store.box<ImageData>();
+final assetsBox = objectbox.store.box<ImageData>();
 
 class _MyAppState extends State<MyApp> {
   @override
-  void initState() {
-    super.initState();
-  }
-
-  @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      debugShowCheckedModeBanner: false,
-      title: 'Domacod',
-      theme: ThemeData.dark(),
-      initialRoute: initScreen == 0 || initScreen == null ? 'onboard' : 'home',
-      routes: {
-        'home': (context) => MainPage(
-              assetBox: assetBox,
-            ),
-        'onboard': (context) => OnBoardingPage(),
-      },
+    return MultiProvider(
+      providers: [
+        ChangeNotifierProvider(create: (BuildContext context) {
+          return DatabaseProvider();
+        }),
+      ],
+      child: MaterialApp(
+        debugShowCheckedModeBanner: false,
+        title: 'Domacod',
+        theme: ThemeData.dark(),
+        initialRoute:
+            initScreen == 0 || initScreen == null ? 'onboard' : 'home',
+        routes: {
+          'home': (context) => MainPage(
+                assetsBox: assetsBox,
+              ),
+          'onboard': (context) => const OnBoardingPage(),
+        },
+      ),
     );
   }
 }

@@ -25,17 +25,22 @@ class AssetThumbnail extends StatelessWidget {
         if (bytes == null) return const CircularProgressIndicator();
         // If there's data, display it as an image
         return InkWell(
-            onTap: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                    builder: (context) => GalleryPhotoViewWrapper(
-                          assets: assets,
-                          index: index,
-                        )),
-              );
-            },
-            child: Image.memory(bytes, fit: BoxFit.cover));
+          onTap: () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => GalleryPhotoViewWrapper(
+                  assets: assets,
+                  index: index,
+                ),
+              ),
+            );
+          },
+          child: Image.memory(
+            bytes,
+            fit: BoxFit.cover,
+          ),
+        );
       },
     );
   }

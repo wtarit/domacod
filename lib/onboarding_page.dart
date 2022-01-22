@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:introduction_screen/introduction_screen.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 import 'home_page.dart';
 import 'main.dart';
 
@@ -21,24 +20,24 @@ class OnBoardingPage extends StatelessWidget {
           done: const Text('Agree',
               style: TextStyle(fontWeight: FontWeight.w500)),
           onDone: () => goTohome(context),
-          next: Icon(Icons.arrow_forward_ios_rounded),
+          next: const Icon(Icons.arrow_forward_ios_rounded),
           dotsDecorator: getDotDecoration(),
-          onChange: (index) => print('Page $index selected'),
+          // onChange: (index) => print('Page $index selected'),
         ),
       );
 
   void goTohome(context) => Navigator.of(context).pushReplacement(
         MaterialPageRoute(
           builder: (_) => MainPage(
-            assetBox: assetBox,
+            assetsBox: assetsBox,
           ),
         ),
       );
 
   DotsDecorator getDotDecoration() => DotsDecorator(
-        color: Color(0xFFBDBDBD),
-        size: Size(10, 10),
-        activeSize: Size(15, 15),
+        color: const Color(0xFFBDBDBD),
+        size: const Size(10, 10),
+        activeSize: const Size(15, 15),
         activeColor: Colors.teal,
         activeShape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(24),

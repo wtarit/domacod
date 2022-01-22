@@ -1,3 +1,4 @@
+import 'package:domacod/providers/database_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:photo_manager/photo_manager.dart';
@@ -7,6 +8,7 @@ import 'package:photo_view/photo_view_gallery.dart';
 import 'dart:io';
 import 'utils/path_utils.dart';
 import 'package:share_plus/share_plus.dart';
+import 'package:provider/provider.dart';
 
 class GalleryPhotoViewWrapper extends StatefulWidget {
   GalleryPhotoViewWrapper({
@@ -39,15 +41,24 @@ class _GalleryPhotoViewWrapperState extends State<GalleryPhotoViewWrapper> {
     ]);
   }
 
-  void deleteImage() async {
-    final file = File(getAbsolutePath(widget.assets[currentIndex].relativePath,
-        widget.assets[currentIndex].title));
-    try {
-      if (await file.exists()) {
-        await file.delete();
-      }
-    } catch (e) {
-      // Error in getting access to the file.
+  void _showDeleteConfirmation() async {
+    String deletePath = getAbsolutePath(
+        widget.assets[currentIndex].relativePath,
+        widget.assets[currentIndex].title);
+    String deleteID = widget.assets[currentIndex].id;
+    final List<String> result = await PhotoManager.editor.deleteWithIds([
+      deleteID,
+    ]);
+    widget.assets.removeWhere((element) => element.id == deleteID);
+    if (result.isNotEmpty) {
+      context.read<DatabaseProvider>().deleteDBbyPath(deletePath);
+      setState(() {
+        // if (currentIndex < widget.assets.length) {
+        //   currentIndex++;
+        //   widget.pageController.nextPage(
+        //       duration: const Duration(milliseconds: 500), curve: Curves.ease);
+        // }
+      });
     }
   }
 
@@ -165,7 +176,7 @@ class _GalleryPhotoViewWrapperState extends State<GalleryPhotoViewWrapper> {
                       Expanded(
                         child: TextButton(
                           style: buttonStyle,
-                          onPressed: deleteImage,
+                          onPressed: _showDeleteConfirmation,
                           child: const Icon(Icons.delete),
                         ),
                       ),
@@ -214,6 +225,25 @@ class _GalleryPhotoViewWrapperState extends State<GalleryPhotoViewWrapper> {
               maxScale: PhotoViewComputedScale.covered * 4,
             ),
           );
+          // return PhotoView(
+          //   imageProvider: FileImage(file),
+          //   initialScale: PhotoViewComputedScale.contained,
+          //   minScale: PhotoViewComputedScale.contained,
+          //   maxScale: PhotoViewComputedScale.covered * 4,
+          //   onTapDown: (context, details, controllerValue) {
+          //     setState(() {
+          //       showButton = !showButton;
+          //       if (showButton) {
+          //         SystemChrome.setEnabledSystemUIMode(SystemUiMode.manual,
+          //             overlays: [SystemUiOverlay.bottom, SystemUiOverlay.top]);
+          //       } else {
+          //         SystemChrome.setEnabledSystemUIMode(SystemUiMode.manual,
+          //             overlays: []);
+          //       }
+          //     });
+          //     print("tap2");
+          //   },
+          // );
         },
       ),
     );

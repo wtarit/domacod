@@ -1,5 +1,4 @@
 import 'dart:io';
-
 import 'package:domacod/grid_image_view.dart';
 import 'package:domacod/objectbox.g.dart';
 import 'package:domacod/screen/disclaimer.dart';
@@ -21,11 +20,13 @@ import 'package:flutter_image_compress/flutter_image_compress.dart';
 import 'package:path/path.dart' as p;
 import 'package:image/image.dart' as image_lib;
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:provider/provider.dart';
+import 'package:domacod/providers/database_provider.dart';
 
 class MainPage extends StatefulWidget {
-  const MainPage({Key? key, required this.assetBox}) : super(key: key);
+  const MainPage({Key? key, required this.assetsBox}) : super(key: key);
 
-  final Box<ImageData> assetBox;
+  final Box<ImageData> assetsBox;
   @override
   _MainPageState createState() => _MainPageState();
 }
@@ -143,7 +144,7 @@ class _MainPageState extends State<MainPage> {
     });
     List<String> newPaths = [];
     List<String> dbPaths = [];
-    List<ImageData> dataBase = widget.assetBox.getAll();
+    List<ImageData> dataBase = widget.assetsBox.getAll();
     for (ImageData db in dataBase) {
       dbPaths.add(db.imagePath);
     }
@@ -157,7 +158,7 @@ class _MainPageState extends State<MainPage> {
     // Loop over database to see which image is deleted.
     for (int i = 0; i < dbPaths.length; i++) {
       if (!newPaths.contains(dbPaths[i])) {
-        widget.assetBox.remove(dataBase[i].id);
+        widget.assetsBox.remove(dataBase[i].id);
       }
     }
     setState(() {
@@ -171,31 +172,34 @@ class _MainPageState extends State<MainPage> {
           String mainCategory = objdetectionResult[0];
           if (mainCategory == "Document" && useOCR) {
             requestOcr(newPaths[i]).then((text) {
-              widget.assetBox.putAsync(ImageData(
+              ImageData writeToDB = ImageData(
                 imagePath: newPaths[i],
                 mainCategory: mainCategory,
                 category: objdetectionResult,
                 text: text,
                 doneOCR: true,
-              ));
+              );
+              context.read<DatabaseProvider>().addImage(writeToDB);
             });
           } else {
-            widget.assetBox.putAsync(ImageData(
+            ImageData writeToDB = ImageData(
               imagePath: newPaths[i],
               mainCategory: mainCategory,
               category: objdetectionResult,
               text: "",
               doneOCR: false,
-            ));
+            );
+            context.read<DatabaseProvider>().addImage(writeToDB);
           }
         } else {
-          widget.assetBox.putAsync(ImageData(
+          ImageData writeToDB = ImageData(
             imagePath: newPaths[i],
             mainCategory: "",
             category: objdetectionResult,
             text: "",
             doneOCR: false,
-          ));
+          );
+          context.read<DatabaseProvider>().addImage(writeToDB);
         }
 
         setState(() {
@@ -210,6 +214,7 @@ class _MainPageState extends State<MainPage> {
 
   @override
   void initState() {
+    context.read<DatabaseProvider>().addDBtoProvider(widget.assetsBox);
     controller = FloatingSearchBarController();
     isolateUtils = IsolateUtils();
     isolateUtils.start();
@@ -227,23 +232,24 @@ class _MainPageState extends State<MainPage> {
   }
 
   void printDB() {
-    List<ImageData> dataBase = widget.assetBox.getAll();
+    List<ImageData> dataBase = widget.assetsBox.getAll();
     print(dataBase.length);
     print(assets.length);
   }
 
   void deleteDB() {
-    widget.assetBox.removeAll();
+    widget.assetsBox.removeAll();
   }
 
   Map<String, dynamic> queryImage(String queryCategory) {
+    Box<ImageData> assetsBox = context.watch<DatabaseProvider>().getDB;
     int amount = 0;
     Query<ImageData> query;
     if (queryCategory == "Recent") {
-      query = widget.assetBox.query().build();
-      amount = assets.length;
+      query = assetsBox.query().build();
+      amount = query.count();
     } else {
-      query = widget.assetBox
+      query = assetsBox
           .query(ImageData_.mainCategory.equals(queryCategory))
           .build();
       amount = query.count();
@@ -293,7 +299,6 @@ class _MainPageState extends State<MainPage> {
                 MaterialPageRoute(
                     builder: (context) => GridImageView(
                           assets: assets,
-                          assetBox: widget.assetBox,
                           category: category,
                         )));
           },
@@ -479,7 +484,7 @@ class _MainPageState extends State<MainPage> {
             MaterialPageRoute(
                 builder: (context) => SearchResultView(
                       query: query,
-                      assetBox: widget.assetBox,
+                      assetBox: widget.assetsBox,
                       assets: assets,
                     )),
           );
