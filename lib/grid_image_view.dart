@@ -45,16 +45,18 @@ class _GridImageViewState extends State<GridImageView> {
       appBar: AppBar(
         title: Text(widget.category),
       ),
-      body: GridView.builder(
-        gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(
-            maxCrossAxisExtent: 140),
-        itemCount: toShow.length,
-        itemBuilder: (_, index) {
-          return AssetThumbnail(
-            assets: toShow,
-            index: index,
-          );
-        },
+      body: Scrollbar(
+        child: GridView.builder(
+          gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(
+              maxCrossAxisExtent: 140),
+          itemCount: toShow.length,
+          itemBuilder: (_, index) {
+            return AssetThumbnail(
+              assets: toShow,
+              index: index,
+            );
+          },
+        ),
       ),
     );
   }
