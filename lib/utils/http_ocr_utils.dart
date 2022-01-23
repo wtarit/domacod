@@ -27,10 +27,8 @@ Future<String> requestOcr(String path) async {
     text = await response.stream.bytesToString();
     return text;
   } else {
-    print("Not 200 response ${response.reasonPhrase}");
-    print("Not 200 response ${response.statusCode}");
-    print("Not 200 response ${await response.stream.bytesToString()}");
-    print("err");
+    print(
+        "Not 200 response ${response.statusCode} ${response.reasonPhrase} ${await response.stream.bytesToString()}");
   }
   return text;
 }

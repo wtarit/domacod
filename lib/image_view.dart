@@ -70,6 +70,20 @@ class _GalleryPhotoViewWrapperState extends State<GalleryPhotoViewWrapper> {
   }
 
   Widget? _showBottomSheet() {
+    AssetEntity currentAsset = widget.assets[currentIndex];
+    List<String> categories = context.read<DatabaseProvider>().queryCategory(
+        getAbsolutePath(currentAsset.relativePath, currentAsset.title));
+    String categoryDisplay = "  ";
+    if (categories.isNotEmpty) {
+      for (int i = 0; i < categories.length; i++) {
+        categoryDisplay += categories[i];
+        if (i < categories.length - 1) {
+          categoryDisplay += ", ";
+        }
+      }
+    } else {
+      categoryDisplay += "Coming Soon...";
+    }
     showModalBottomSheet(
         context: context,
         backgroundColor: Colors.transparent,
@@ -165,8 +179,8 @@ class _GalleryPhotoViewWrapperState extends State<GalleryPhotoViewWrapper> {
                         child: Icon(Icons.tag_rounded,
                             color: Colors.white60, size: 20),
                       ),
-                      const TextSpan(
-                        text: "   Coming Soon...",
+                      TextSpan(
+                        text: categoryDisplay,
                         style: TextStyle(
                           color: Colors.white70,
                           fontSize: 14,

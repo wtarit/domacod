@@ -21,5 +21,15 @@ class DatabaseProvider extends ChangeNotifier {
     notifyListeners();
   }
 
+  List<String> queryCategory(String imagePath) {
+    Query<ImageData> query =
+        assetsBox.query(ImageData_.imagePath.equals(imagePath)).build();
+    ImageData? result = query.findFirst();
+    if (result == null) {
+      return [];
+    }
+    return result.category.toSet().toList();
+  }
+
   get getDB => assetsBox;
 }
