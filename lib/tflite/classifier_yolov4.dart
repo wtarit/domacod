@@ -1,3 +1,4 @@
+import 'dart:io';
 import 'dart:math';
 import 'dart:ui';
 import 'package:collection/collection.dart';
@@ -348,5 +349,14 @@ class Classifier {
           inferenceTime: inferenceTimeElapsed,
           preProcessingTime: preProcessElapsedTime),
     };
+  }
+
+  Map<String, dynamic> predictFromPath(String filepath) {
+    image_lib.Image? img =
+        image_lib.decodeImage(File(filepath).readAsBytesSync());
+    if (img != null) {
+      return predict(img);
+    }
+    return {"recognitions": []};
   }
 }

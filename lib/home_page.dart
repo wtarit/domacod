@@ -109,7 +109,8 @@ class _MainPageState extends State<MainPage> {
 
   /// Runs inference in another isolate
   Future<List<String>> inference(String filepath) async {
-    Uint8List? data = File(filepath).readAsBytesSync();
+    Uint8List data = await File(filepath).readAsBytes();
+    IsolateData isolateData;
     if (p.extension(filepath) == ".heic") {
       data = await FlutterImageCompress.compressWithList(
         data,
@@ -117,16 +118,23 @@ class _MainPageState extends State<MainPage> {
         minHeight: 416,
         format: CompressFormat.jpeg,
       );
+      image_lib.Image? img = image_lib.decodeImage(data);
+      if (img == null) {
+        return [];
+      }
+      isolateData = IsolateData(
+        interpreterAddress: classifier.interpreter.address,
+        labels: classifier.labels,
+        img: img,
+      );
+    } else {
+      isolateData = IsolateData(
+        interpreterAddress: classifier.interpreter.address,
+        labels: classifier.labels,
+        imgPath: filepath,
+      );
     }
-    image_lib.Image? img = image_lib.decodeImage(data);
-    if (img == null) {
-      return [];
-    }
-    IsolateData isolateData = IsolateData(
-      img,
-      classifier.interpreter.address,
-      classifier.labels,
-    );
+
     ReceivePort responsePort = ReceivePort();
     isolateUtils.sendPort
         .send(isolateData..responsePort = responsePort.sendPort);
@@ -231,16 +239,6 @@ class _MainPageState extends State<MainPage> {
     super.initState();
   }
 
-  void printDB() {
-    List<ImageData> dataBase = widget.assetsBox.getAll();
-    print(dataBase.length);
-    print(assets.length);
-  }
-
-  void deleteDB() {
-    widget.assetsBox.removeAll();
-  }
-
   Map<String, dynamic> queryImage(String queryCategory) {
     Box<ImageData> assetsBox = context.watch<DatabaseProvider>().getDB;
     int amount = 0;
@@ -324,10 +322,6 @@ class _MainPageState extends State<MainPage> {
     if (busy) {
       gridElement.add(Container());
     }
-    gridElement
-        .add(ElevatedButton(onPressed: printDB, child: const Text("printDB")));
-    gridElement.add(
-        ElevatedButton(onPressed: deleteDB, child: const Text("DeleteDB")));
     double padding = 100;
     return GridView.count(
       mainAxisSpacing: 5,
