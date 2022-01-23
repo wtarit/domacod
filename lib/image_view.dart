@@ -81,48 +81,95 @@ class _GalleryPhotoViewWrapperState extends State<GalleryPhotoViewWrapper> {
                   topLeft: Radius.circular(25), topRight: Radius.circular(25)),
               color: Colors.black,
             ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
+            child: ListView(
+              //crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Text(
-                  "Info",
-                  style: TextStyle(
-                      color: Colors.white,
-                      fontSize: 30,
-                      fontWeight: FontWeight.w800),
-                ),
                 RichText(
                   text: TextSpan(
                     children: [
                       const WidgetSpan(
                         child: Icon(Icons.photo_outlined,
-                            color: Colors.white60, size: 30),
+                            color: Colors.white60, size: 20),
                       ),
                       TextSpan(
                         text:
-                            "   File Name: ${getAbsolutePath(null, widget.assets[currentIndex].title)}",
+                            "   ${getAbsolutePath(null, widget.assets[currentIndex].title)}\n",
                         style: const TextStyle(
-                            color: Colors.white,
-                            fontSize: 16,
+                            color: Colors.white70,
+                            fontSize: 14,
                             fontWeight: FontWeight.w500,
                             height: 3),
                       ),
-                    ],
-                  ),
-                ),
-                RichText(
-                  text: TextSpan(
-                    children: [
                       const WidgetSpan(
-                        child: Icon(Icons.folder_open,
-                            color: Colors.white60, size: 30),
+                        child: Icon(Icons.folder_open_rounded,
+                            color: Colors.white60, size: 20),
                       ),
                       TextSpan(
                         text:
-                            "   File Path: ${getAbsolutePath(widget.assets[currentIndex].relativePath, null)}",
+                            "   ${getAbsolutePath(widget.assets[currentIndex].relativePath, null)}\n",
                         style: const TextStyle(
-                          color: Colors.white,
-                          fontSize: 16,
+                          color: Colors.white70,
+                          fontSize: 14,
+                          fontWeight: FontWeight.w500,
+                          height: 3,
+                        ),
+                      ),
+                      const WidgetSpan(
+                        child: Icon(Icons.photo_size_select_large_rounded,
+                            color: Colors.white60, size: 20),
+                      ),
+                      TextSpan(
+                        text:
+                            "   ${widget.assets[currentIndex].width} X ${widget.assets[currentIndex].height}\n",
+                        style: const TextStyle(
+                          color: Colors.white70,
+                          fontSize: 14,
+                          fontWeight: FontWeight.w500,
+                          height: 3,
+                        ),
+                      ),
+                      const WidgetSpan(
+                        child: Icon(Icons.access_time_rounded,
+                            color: Colors.white60, size: 20),
+                      ),
+                      TextSpan(
+                        text:
+                            "   ${widget.assets[currentIndex].createDateTime}\n",
+                        style: const TextStyle(
+                          color: Colors.white70,
+                          fontSize: 14,
+                          fontWeight: FontWeight.w500,
+                          height: 3,
+                        ),
+                      ),
+                      // If latitude and longitude is 0, it means that no positioning information was obtained. And don't show this part.
+                      widget.assets[currentIndex].latitude != 0.0
+                          ? const WidgetSpan(
+                              child: Icon(Icons.location_on_outlined,
+                                  color: Colors.white60, size: 20),
+                            )
+                          : const TextSpan(),
+                      widget.assets[currentIndex].latitude != 0.0
+                          ? TextSpan(
+                              text:
+                                  "   ${widget.assets[currentIndex].latitude} X ${widget.assets[currentIndex].longitude}\n",
+                              style: const TextStyle(
+                                color: Colors.white70,
+                                fontSize: 14,
+                                fontWeight: FontWeight.w500,
+                                height: 3,
+                              ),
+                            )
+                          : const TextSpan(),
+                      const WidgetSpan(
+                        child: Icon(Icons.tag_rounded,
+                            color: Colors.white60, size: 20),
+                      ),
+                      const TextSpan(
+                        text: "   Coming Soon...",
+                        style: TextStyle(
+                          color: Colors.white70,
+                          fontSize: 14,
                           fontWeight: FontWeight.w500,
                           height: 3,
                         ),
