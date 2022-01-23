@@ -239,33 +239,6 @@ class _MainPageState extends State<MainPage> {
     super.initState();
   }
 
-  Map<String, dynamic> queryImage(String queryCategory) {
-    Box<ImageData> assetsBox = context.watch<DatabaseProvider>().getDB;
-    int amount = 0;
-    Query<ImageData> query;
-    if (queryCategory == "Recent") {
-      query = assetsBox.query().build();
-      amount = query.count();
-    } else {
-      query = assetsBox
-          .query(ImageData_.mainCategory.equals(queryCategory))
-          .build();
-      amount = query.count();
-    }
-    ImageData? doc = query.findFirst();
-
-    if (doc != null && File(doc.imagePath).existsSync()) {
-      return {"path": doc.imagePath, "amount": amount};
-    }
-    List<String> imagePaths = query.property(ImageData_.imagePath).find();
-    for (String imagePath in imagePaths) {
-      if (File(imagePath).existsSync()) {
-        return {"path": imagePath, "amount": amount};
-      }
-    }
-    return {"path": "", "amount": amount};
-  }
-
   Widget categoryGrid() {
     double width = MediaQuery.of(context).size.width;
     List<String> categories = [
@@ -283,11 +256,12 @@ class _MainPageState extends State<MainPage> {
     ];
     List<Widget> gridElement = [];
     for (String category in categories) {
-      Map<String, dynamic> imgPath = queryImage(category);
+      PathAndAmount imgPath =
+          context.read<DatabaseProvider>().queryPathAndAmount(category);
       late Widget img;
-      if (imgPath["path"].isNotEmpty) {
+      if (imgPath.imagePath.isNotEmpty) {
         img = Image.file(
-          File(imgPath["path"]),
+          File(imgPath.imagePath),
           fit: BoxFit.cover,
         );
         gridElement.add(InkWell(
@@ -310,7 +284,7 @@ class _MainPageState extends State<MainPage> {
                   children: [
                     Text(category),
                     const Spacer(),
-                    Text("${imgPath["amount"]}"),
+                    Text("${imgPath.amount}"),
                   ],
                 ),
               ),
