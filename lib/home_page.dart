@@ -179,13 +179,13 @@ class _MainPageState extends State<MainPage> {
         if (objdetectionResult.isNotEmpty) {
           String mainCategory = objdetectionResult[0];
           if (mainCategory == "Document" && useOCR) {
-            requestOcr(newPaths[i]).then((text) {
+            requestOcr(newPaths[i]).then((data) {
               ImageData writeToDB = ImageData(
                 imagePath: newPaths[i],
                 mainCategory: mainCategory,
                 category: objdetectionResult,
-                text: text,
-                doneOCR: true,
+                text: data["text"],
+                doneOCR: data["complete"],
               );
               context.read<DatabaseProvider>().addImage(writeToDB);
             });
