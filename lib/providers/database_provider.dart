@@ -45,6 +45,12 @@ class DatabaseProvider extends ChangeNotifier {
       amount = query.count();
     }
     List<ImageData> docs = query.find();
+    if (docs.isEmpty) {
+      query =
+          assetsBox.query(ImageData_.category.contains(queryCategory)).build();
+      amount = query.count();
+      docs = query.find();
+    }
     if (docs.isNotEmpty) {
       ImageData doc = docs.last;
       if (File(doc.imagePath).existsSync()) {
