@@ -27,17 +27,11 @@ class _GridImageViewState extends State<GridImageView> {
     if (widget.category == "Recent") {
       toShow = widget.assets;
     } else {
-      // Query<ImageData> query = assetsBox
-      //     .query(ImageData_.mainCategory.equals(widget.category))
-      //     .build();
       Query<ImageData> query = assetsBox
           .query(ImageData_.category.contains(widget.category))
           .build();
-      List<String> filename = query.property(ImageData_.imagePath).find();
-      toShow = widget.assets
-          .where((e) =>
-              filename.contains(getAbsolutePath(e.relativePath, e.title)))
-          .toList();
+      List<String> toShowIDs = query.property(ImageData_.imageID).find();
+      toShow = widget.assets.where((e) => toShowIDs.contains(e.id)).toList();
     }
   }
 

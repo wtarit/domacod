@@ -27,11 +27,8 @@ class _SearchResultViewState extends State<SearchResultView> {
     Query<ImageData> query = assetsBox
         .query(ImageData_.text.contains(widget.query, caseSensitive: false))
         .build();
-    List<String> filename = query.property(ImageData_.imagePath).find();
-    toShow = widget.assets
-        .where(
-            (e) => filename.contains(getAbsolutePath(e.relativePath, e.title)))
-        .toList();
+    List<String> toShowIDs = query.property(ImageData_.imageID).find();
+    toShow = widget.assets.where((e) => toShowIDs.contains(e.id)).toList();
   }
 
   @override

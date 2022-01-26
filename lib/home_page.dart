@@ -108,8 +108,9 @@ class _MainPageState extends State<MainPage> {
   }
 
   /// Runs inference in another isolate
-  Future<List<String>> inference(String filepath) async {
-    Uint8List data = await File(filepath).readAsBytes();
+  Future<List<String>> inference(File imgFile) async {
+    String filepath = imgFile.path;
+    Uint8List data = await imgFile.readAsBytes();
     IsolateData isolateData;
     if (p.extension(filepath) == ".heic") {
       data = await FlutterImageCompress.compressWithList(
@@ -150,38 +151,39 @@ class _MainPageState extends State<MainPage> {
     setState(() {
       busy = true;
     });
-    List<String> newPaths = [];
-    List<String> dbPaths = [];
+    List<String> newIDs = [];
+    List<String> dbIDs = [];
     List<ImageData> dataBase = widget.assetsBox.getAll();
     for (ImageData db in dataBase) {
-      dbPaths.add(db.imagePath);
+      dbIDs.add(db.imageID);
     }
     for (AssetEntity asset in assets) {
-      String? relpath = asset.relativePath;
-      String? fname = asset.title;
-      String path = getAbsolutePath(relpath, fname);
-      newPaths.add(path);
+      newIDs.add(asset.id);
     }
 
     // Loop over database to see which image is deleted.
-    for (int i = 0; i < dbPaths.length; i++) {
-      if (!newPaths.contains(dbPaths[i])) {
+    for (int i = 0; i < dbIDs.length; i++) {
+      if (!newIDs.contains(dbIDs[i])) {
         widget.assetsBox.remove(dataBase[i].id);
       }
     }
     setState(() {
-      processed = dbPaths.length;
+      processed = dbIDs.length;
     });
     // Add new image that not exist in database before.
-    for (int i = 0; i < newPaths.length; i++) {
-      if (!dbPaths.contains(newPaths[i])) {
-        List<String> objdetectionResult = await inference(newPaths[i]);
+    for (AssetEntity asset in assets) {
+      if (!dbIDs.contains(asset.id)) {
+        File? imgFile = await asset.file;
+        if (imgFile == null) {
+          continue;
+        }
+        List<String> objdetectionResult = await inference(imgFile);
         if (objdetectionResult.isNotEmpty) {
           String mainCategory = objdetectionResult[0];
           if (mainCategory == "Document" && useOCR) {
-            requestOcr(newPaths[i]).then((data) {
+            requestOcr(imgFile).then((data) {
               ImageData writeToDB = ImageData(
-                imagePath: newPaths[i],
+                imageID: asset.id,
                 mainCategory: mainCategory,
                 category: objdetectionResult,
                 text: data["text"],
@@ -191,7 +193,7 @@ class _MainPageState extends State<MainPage> {
             });
           } else {
             ImageData writeToDB = ImageData(
-              imagePath: newPaths[i],
+              imageID: asset.id,
               mainCategory: mainCategory,
               category: objdetectionResult,
               text: "",
@@ -201,7 +203,7 @@ class _MainPageState extends State<MainPage> {
           }
         } else {
           ImageData writeToDB = ImageData(
-            imagePath: newPaths[i],
+            imageID: asset.id,
             mainCategory: "",
             category: objdetectionResult,
             text: "",
@@ -239,6 +241,76 @@ class _MainPageState extends State<MainPage> {
     super.initState();
   }
 
+  // Widget categoryGrid() {
+  //   double width = MediaQuery.of(context).size.width;
+  //   List<String> categories = [
+  //     "Recent",
+  //     "Document",
+  //     "Cat",
+  //     "Dog",
+  //     "Bird",
+  //     "Animal",
+  //     "Person",
+  //     "Car",
+  //     "Bicycle",
+  //     "Motorcycle",
+  //     "Airplane",
+  //   ];
+  //   List<Widget> gridElement = [];
+  //   for (String category in categories) {
+  //     PathAndAmount imgPath =
+  //         context.read<DatabaseProvider>().queryPathAndAmount(category);
+  //     late Widget img;
+  //     if (imgPath.imagePath.isNotEmpty) {
+  //       img = Image.file(
+  //         File(imgPath.imagePath),
+  //         fit: BoxFit.cover,
+  //       );
+
+  //       gridElement.add(InkWell(
+  //         onTap: () {
+  //           Navigator.push(
+  //               context,
+  //               MaterialPageRoute(
+  //                   builder: (context) => GridImageView(
+  //                         assets: assets,
+  //                         category: category,
+  //                       )));
+  //         },
+  //         child: ClipRRect(
+  //           borderRadius: const BorderRadius.all(Radius.circular(7)),
+  //           child: GridTile(
+  //             // child: img,
+  //             child: Container(),
+  //             footer: GridTileBar(
+  //               backgroundColor: Colors.black,
+  //               title: Row(
+  //                 children: [
+  //                   Text(category),
+  //                   const Spacer(),
+  //                   // Text("${imgPath.amount}"),
+  //                 ],
+  //               ),
+  //             ),
+  //           ),
+  //         ),
+  //       ));
+  //     }
+  //   }
+  //   if (busy) {
+  //     gridElement.add(Container());
+  //   }
+  //   double padding = 100;
+  //   return GridView.count(
+  //     mainAxisSpacing: 5,
+  //     crossAxisSpacing: 5,
+  //     padding: EdgeInsets.only(top: padding),
+  //     // shrinkWrap: true,
+  //     crossAxisCount: width ~/ 180,
+  //     children: gridElement,
+  //   );
+  // }
+
   Widget categoryGrid() {
     double width = MediaQuery.of(context).size.width;
     List<String> categories = [
@@ -256,42 +328,33 @@ class _MainPageState extends State<MainPage> {
     ];
     List<Widget> gridElement = [];
     for (String category in categories) {
-      PathAndAmount imgPath =
-          context.read<DatabaseProvider>().queryPathAndAmount(category);
-      late Widget img;
-      if (imgPath.imagePath.isNotEmpty) {
-        img = Image.file(
-          File(imgPath.imagePath),
-          fit: BoxFit.cover,
-        );
-        gridElement.add(InkWell(
-          onTap: () {
-            Navigator.push(
-                context,
-                MaterialPageRoute(
-                    builder: (context) => GridImageView(
-                          assets: assets,
-                          category: category,
-                        )));
-          },
-          child: ClipRRect(
-            borderRadius: const BorderRadius.all(Radius.circular(7)),
-            child: GridTile(
-              child: img,
-              footer: GridTileBar(
-                backgroundColor: Colors.black,
-                title: Row(
-                  children: [
-                    Text(category),
-                    const Spacer(),
-                    Text("${imgPath.amount}"),
-                  ],
-                ),
+      gridElement.add(InkWell(
+        onTap: () {
+          Navigator.push(
+              context,
+              MaterialPageRoute(
+                  builder: (context) => GridImageView(
+                        assets: assets,
+                        category: category,
+                      )));
+        },
+        child: ClipRRect(
+          borderRadius: const BorderRadius.all(Radius.circular(7)),
+          child: GridTile(
+            child: Container(),
+            footer: GridTileBar(
+              backgroundColor: Colors.black,
+              title: Row(
+                children: [
+                  Text(category),
+                  const Spacer(),
+                  // Text("${imgPath.amount}"),
+                ],
               ),
             ),
           ),
-        ));
-      }
+        ),
+      ));
     }
     if (busy) {
       gridElement.add(Container());

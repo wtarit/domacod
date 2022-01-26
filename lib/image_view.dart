@@ -34,24 +34,28 @@ class _GalleryPhotoViewWrapperState extends State<GalleryPhotoViewWrapper> {
     super.initState();
   }
 
-  void shareImage() {
-    Share.shareFiles([
-      getAbsolutePath(widget.assets[currentIndex].relativePath,
-          widget.assets[currentIndex].title)
-    ]);
+  void shareImage() async {
+    final Size size = MediaQuery.of(context).size;
+    File? imgFile = await widget.assets[currentIndex].file;
+    if (imgFile != null) {
+      print(imgFile.path);
+      Share.shareFiles(
+        [
+          imgFile.path,
+        ],
+        sharePositionOrigin: Rect.fromLTWH(0, 0, size.width, size.height / 2),
+      );
+    }
   }
 
   void _showDeleteConfirmation() async {
-    String deletePath = getAbsolutePath(
-        widget.assets[currentIndex].relativePath,
-        widget.assets[currentIndex].title);
     String deleteID = widget.assets[currentIndex].id;
     final List<String> result = await PhotoManager.editor.deleteWithIds([
       deleteID,
     ]);
     widget.assets.removeWhere((element) => element.id == deleteID);
     if (result.isNotEmpty) {
-      context.read<DatabaseProvider>().deleteDBbyPath(deletePath);
+      context.read<DatabaseProvider>().deleteDBbyID(deleteID);
       if (widget.assets.isEmpty) {
         Navigator.pop(context);
       }
@@ -71,8 +75,8 @@ class _GalleryPhotoViewWrapperState extends State<GalleryPhotoViewWrapper> {
 
   Widget? _showBottomSheet() {
     AssetEntity currentAsset = widget.assets[currentIndex];
-    List<String> categories = context.read<DatabaseProvider>().queryCategory(
-        getAbsolutePath(currentAsset.relativePath, currentAsset.title));
+    List<String> categories =
+        context.read<DatabaseProvider>().queryCategory(currentAsset.id);
     String categoryDisplay = "  ";
     if (categories.isNotEmpty) {
       for (int i = 0; i < categories.length; i++) {

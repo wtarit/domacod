@@ -5,7 +5,7 @@
   "entities": [
     {
       "id": "1:4477898057681581101",
-      "lastPropertyId": "7:6729826801956580577",
+      "lastPropertyId": "8:2286941924639846477",
       "name": "ImageData",
       "properties": [
         {
@@ -13,11 +13,6 @@
           "name": "id",
           "type": 6,
           "flags": 1
-        },
-        {
-          "id": "2:4111193360241059784",
-          "name": "imagePath",
-          "type": 9
         },
         {
           "id": "4:7125564852136075291",
@@ -38,6 +33,11 @@
           "id": "7:6729826801956580577",
           "name": "doneOCR",
           "type": 1
+        },
+        {
+          "id": "8:2286941924639846477",
+          "name": "imageID",
+          "type": 9
         }
       ],
       "relations": []
@@ -52,7 +52,8 @@
   "retiredEntityUids": [],
   "retiredIndexUids": [],
   "retiredPropertyUids": [
-    440806919225057846
+    440806919225057846,
+    4111193360241059784
   ],
   "retiredRelationUids": [],
   "version": 1
