@@ -10,10 +10,8 @@ import 'widgets/thumbnail_view.dart';
 class GridImageView extends StatefulWidget {
   const GridImageView({
     Key? key,
-    required this.assets,
     required this.category,
   }) : super(key: key);
-  final List<AssetEntity> assets;
   final String category;
 
   @override
@@ -24,14 +22,15 @@ class _GridImageViewState extends State<GridImageView> {
   List<AssetEntity> toShow = [];
   void fetchImageToShow() {
     Box<ImageData> assetsBox = context.watch<DatabaseProvider>().getDB;
+    List<AssetEntity> assets = context.watch<DatabaseProvider>().assets;
     if (widget.category == "Recent") {
-      toShow = widget.assets;
+      toShow = assets;
     } else {
       Query<ImageData> query = assetsBox
           .query(ImageData_.category.contains(widget.category))
           .build();
       List<String> toShowIDs = query.property(ImageData_.imageID).find();
-      toShow = widget.assets.where((e) => toShowIDs.contains(e.id)).toList();
+      toShow = assets.where((e) => toShowIDs.contains(e.id)).toList();
     }
   }
 
