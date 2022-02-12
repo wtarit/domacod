@@ -181,34 +181,6 @@ class DatabaseProvider extends ChangeNotifier {
     return result.category.toSet().toList();
   }
 
-  // PathAndAmount queryPathAndAmount(String queryCategory) {
-  //   int amount = 0;
-  //   Query<ImageData> query;
-  //   if (queryCategory == "Recent") {
-  //     query = assetsBox.query().build();
-  //     amount = query.count();
-  //   } else {
-  //     query = assetsBox
-  //         .query(ImageData_.mainCategory.equals(queryCategory))
-  //         .build();
-  //     amount = query.count();
-  //   }
-  //   List<ImageData> docs = query.find();
-  //   if (docs.isEmpty) {
-  //     query =
-  //         assetsBox.query(ImageData_.category.contains(queryCategory)).build();
-  //     amount = query.count();
-  //     docs = query.find();
-  //   }
-  //   if (docs.isNotEmpty) {
-  //     ImageData doc = docs.last;
-  //     if (File(doc.imagePath).existsSync()) {
-  //       return PathAndAmount(imagePath: doc.imagePath, amount: amount);
-  //     }
-  //   }
-  //   return PathAndAmount(imagePath: "", amount: amount);
-  // }
-
   List<ImageCategoryThumbnail> getThumbData() {
     if (assets.isEmpty) return [];
     List<ImageCategoryThumbnail> thumbresult = [];

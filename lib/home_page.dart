@@ -98,11 +98,9 @@ class _MainPageState extends State<MainPage> {
     List<ImageCategoryThumbnail> thumbnailData =
         context.read<DatabaseProvider>().getThumbData();
     List<Widget> gridElement = [];
-    gridElement = thumbnailData
-        .map((e) => CategoryThumbnail(
-              thumb: e,
-            ))
-        .toList();
+    for (ImageCategoryThumbnail thumb in thumbnailData) {
+      gridElement.add(CategoryThumbnail(thumb: thumb));
+    }
     if (context.watch<DatabaseProvider>().busy) {
       gridElement.add(Container());
     }
