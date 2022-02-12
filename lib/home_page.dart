@@ -3,6 +3,7 @@ import 'package:domacod/objectbox.g.dart';
 import 'package:domacod/screen/disclaimer.dart';
 import 'package:domacod/screen/settings.dart';
 import 'package:domacod/search_result_view.dart';
+import 'package:domacod/widgets/category_thumbnail_view.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:photo_manager/photo_manager.dart';
@@ -92,122 +93,16 @@ class _MainPageState extends State<MainPage> {
     super.initState();
   }
 
-  // Widget categoryGrid() {
-  //   double width = MediaQuery.of(context).size.width;
-  //   List<String> categories = [
-  //     "Recent",
-  //     "Document",
-  //     "Cat",
-  //     "Dog",
-  //     "Bird",
-  //     "Animal",
-  //     "Person",
-  //     "Car",
-  //     "Bicycle",
-  //     "Motorcycle",
-  //     "Airplane",
-  //   ];
-  //   List<Widget> gridElement = [];
-  //   for (String category in categories) {
-  //     PathAndAmount imgPath =
-  //         context.read<DatabaseProvider>().queryPathAndAmount(category);
-  //     late Widget img;
-  //     if (imgPath.imagePath.isNotEmpty) {
-  //       img = Image.file(
-  //         File(imgPath.imagePath),
-  //         fit: BoxFit.cover,
-  //       );
-
-  //       gridElement.add(InkWell(
-  //         onTap: () {
-  //           Navigator.push(
-  //               context,
-  //               MaterialPageRoute(
-  //                   builder: (context) => GridImageView(
-  //                         assets: assets,
-  //                         category: category,
-  //                       )));
-  //         },
-  //         child: ClipRRect(
-  //           borderRadius: const BorderRadius.all(Radius.circular(7)),
-  //           child: GridTile(
-  //             // child: img,
-  //             child: Container(),
-  //             footer: GridTileBar(
-  //               backgroundColor: Colors.black,
-  //               title: Row(
-  //                 children: [
-  //                   Text(category),
-  //                   const Spacer(),
-  //                   // Text("${imgPath.amount}"),
-  //                 ],
-  //               ),
-  //             ),
-  //           ),
-  //         ),
-  //       ));
-  //     }
-  //   }
-  //   if (busy) {
-  //     gridElement.add(Container());
-  //   }
-  //   double padding = 100;
-  //   return GridView.count(
-  //     mainAxisSpacing: 5,
-  //     crossAxisSpacing: 5,
-  //     padding: EdgeInsets.only(top: padding),
-  //     // shrinkWrap: true,
-  //     crossAxisCount: width ~/ 180,
-  //     children: gridElement,
-  //   );
-  // }
-
   Widget categoryGrid() {
     double width = MediaQuery.of(context).size.width;
-    List<String> categories = [
-      "Recent",
-      "Document",
-      "Cat",
-      "Dog",
-      "Bird",
-      "Animal",
-      "Person",
-      "Car",
-      "Bicycle",
-      "Motorcycle",
-      "Airplane",
-    ];
+    List<ImageCategoryThumbnail> thumbnailData =
+        context.read<DatabaseProvider>().getThumbData();
     List<Widget> gridElement = [];
-    for (String category in categories) {
-      gridElement.add(InkWell(
-        onTap: () {
-          Navigator.push(
-            context,
-            MaterialPageRoute(
-              builder: (context) => GridImageView(
-                category: category,
-              ),
-            ),
-          );
-        },
-        child: ClipRRect(
-          borderRadius: const BorderRadius.all(Radius.circular(7)),
-          child: GridTile(
-            child: Container(),
-            footer: GridTileBar(
-              backgroundColor: Colors.black,
-              title: Row(
-                children: [
-                  Text(category),
-                  const Spacer(),
-                  // Text("${imgPath.amount}"),
-                ],
-              ),
-            ),
-          ),
-        ),
-      ));
-    }
+    gridElement = thumbnailData
+        .map((e) => CategoryThumbnail(
+              thumb: e,
+            ))
+        .toList();
     if (context.watch<DatabaseProvider>().busy) {
       gridElement.add(Container());
     }

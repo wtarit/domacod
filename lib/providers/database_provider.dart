@@ -150,7 +150,6 @@ class DatabaseProvider extends ChangeNotifier {
   }
 
   void indexImages() async {
-    print("DEBUG: Start index");
     await _fetchAssets();
     print("DEBUG: fetched assets ${assets.length}");
     await classifier.load();
@@ -210,14 +209,64 @@ class DatabaseProvider extends ChangeNotifier {
   //   return PathAndAmount(imagePath: "", amount: amount);
   // }
 
+  List<ImageCategoryThumbnail> getThumbData() {
+    if (assets.isEmpty) return [];
+    List<ImageCategoryThumbnail> thumbresult = [];
+    List<String> categories = [
+      "Recent",
+      "Document",
+      "Cat",
+      "Dog",
+      "Bird",
+      "Animal",
+      "Person",
+      "Car",
+      "Bicycle",
+      "Motorcycle",
+      "Airplane",
+    ];
+    for (String category in categories) {
+      if (category == "Recent") {
+        thumbresult.add(
+          ImageCategoryThumbnail(
+              category: category,
+              amount: assets.length,
+              thumbdata: assets[0].thumbData),
+        );
+      } else {
+        Query<ImageData> query =
+            assetsBox.query(ImageData_.mainCategory.equals(category)).build();
+        ImageData? result = query.findFirst();
+        if (result == null) {
+          query =
+              assetsBox.query(ImageData_.category.contains(category)).build();
+          result = query.findFirst();
+          if (result == null) {
+            continue;
+          }
+        }
+        AssetEntity resultasset =
+            assets.firstWhere((element) => element.id == result!.imageID);
+        thumbresult.add(ImageCategoryThumbnail(
+          category: category,
+          amount: query.count(),
+          thumbdata: resultasset.thumbData,
+        ));
+      }
+    }
+    return thumbresult;
+  }
+
   get getDB => assetsBox;
 }
 
-class PathAndAmount {
-  late String imagePath;
-  late int amount;
-  PathAndAmount({
-    required this.imagePath,
+class ImageCategoryThumbnail {
+  String category;
+  int amount;
+  Future<Uint8List?> thumbdata;
+  ImageCategoryThumbnail({
+    required this.category,
     required this.amount,
+    required this.thumbdata,
   });
 }
