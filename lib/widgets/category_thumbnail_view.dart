@@ -1,3 +1,4 @@
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'dart:typed_data';
 import '../providers/database_provider.dart';
@@ -13,12 +14,12 @@ class CategoryThumbnail extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return FutureBuilder<Uint8List?>(
+    return FutureBuilder<File?>(
       future: thumb.thumbdata,
       builder: (_, snapshot) {
         final bytes = snapshot.data;
         // If we have no data, display a spinner
-        if (bytes == null) return const CircularProgressIndicator();
+        if (bytes == null) return Container();
         // If there's data, display it as an image
         return InkWell(
           onTap: () {
@@ -34,7 +35,7 @@ class CategoryThumbnail extends StatelessWidget {
           child: ClipRRect(
             borderRadius: const BorderRadius.all(Radius.circular(7)),
             child: GridTile(
-              child: Image.memory(
+              child: Image.file(
                 bytes,
                 fit: BoxFit.cover,
               ),

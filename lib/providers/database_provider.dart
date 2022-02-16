@@ -84,11 +84,8 @@ class DatabaseProvider extends ChangeNotifier {
 
   Future<void> addDB() async {
     List<String> newIDs = [];
-    List<String> dbIDs = [];
-    List<ImageData> dataBase = assetsBox.getAll();
-    for (ImageData db in dataBase) {
-      dbIDs.add(db.imageID);
-    }
+    Query<ImageData> queryIDs = assetsBox.query().build();
+    List<String> dbIDs = queryIDs.property(ImageData_.imageID).find();
     for (AssetEntity asset in assets) {
       newIDs.add(asset.id);
     }
@@ -96,7 +93,12 @@ class DatabaseProvider extends ChangeNotifier {
     // Loop over database to see which image is deleted.
     for (int i = 0; i < dbIDs.length; i++) {
       if (!newIDs.contains(dbIDs[i])) {
-        assetsBox.remove(dataBase[i].id);
+        Query<ImageData> queryDBIDs =
+            assetsBox.query(ImageData_.imageID.equals(dbIDs[i])).build();
+        ImageData? toremove = queryDBIDs.findFirst();
+        if (toremove != null) {
+          assetsBox.remove(toremove.id);
+        }
       }
     }
     processed = dbIDs.length;
@@ -143,9 +145,9 @@ class DatabaseProvider extends ChangeNotifier {
           );
           addImage(writeToDB);
         }
+        processed++;
+        notifyListeners();
       }
-      processed++;
-      notifyListeners();
     }
   }
 
@@ -203,7 +205,7 @@ class DatabaseProvider extends ChangeNotifier {
           ImageCategoryThumbnail(
               category: category,
               amount: assets.length,
-              thumbdata: assets[0].thumbData),
+              thumbdata: assets[0].file),
         );
       } else {
         Query<ImageData> query =
@@ -222,7 +224,7 @@ class DatabaseProvider extends ChangeNotifier {
         thumbresult.add(ImageCategoryThumbnail(
           category: category,
           amount: query.count(),
-          thumbdata: resultasset.thumbData,
+          thumbdata: resultasset.file,
         ));
       }
     }
@@ -235,7 +237,7 @@ class DatabaseProvider extends ChangeNotifier {
 class ImageCategoryThumbnail {
   String category;
   int amount;
-  Future<Uint8List?> thumbdata;
+  Future<File?> thumbdata;
   ImageCategoryThumbnail({
     required this.category,
     required this.amount,

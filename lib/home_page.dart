@@ -88,8 +88,8 @@ class _MainPageState extends State<MainPage> {
         useOCR = prefs.getBool('useOCR') ?? true;
       });
     });
-    _requestPermission();
-    context.read<DatabaseProvider>().indexImages();
+    _requestPermission()
+        .then((value) => context.read<DatabaseProvider>().indexImages());
     super.initState();
   }
 

@@ -38,12 +38,11 @@ class _GalleryPhotoViewWrapperState extends State<GalleryPhotoViewWrapper> {
     final Size size = MediaQuery.of(context).size;
     File? imgFile = await widget.assets[currentIndex].file;
     if (imgFile != null) {
-      print(imgFile.path);
       Share.shareFiles(
         [
           imgFile.path,
         ],
-        sharePositionOrigin: Rect.fromLTWH(0, 0, size.width, size.height / 2),
+        sharePositionOrigin: Rect.fromLTWH(0, 0, size.width, size.height / 4),
       );
     }
   }

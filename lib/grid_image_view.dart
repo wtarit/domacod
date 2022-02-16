@@ -1,6 +1,5 @@
 import 'package:domacod/objectbox.g.dart';
 import 'package:domacod/providers/database_provider.dart';
-import 'package:domacod/utils/path_utils.dart';
 import 'package:flutter/material.dart';
 import 'package:photo_manager/photo_manager.dart';
 import 'package:provider/provider.dart';
