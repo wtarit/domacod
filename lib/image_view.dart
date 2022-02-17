@@ -42,7 +42,7 @@ class _GalleryPhotoViewWrapperState extends State<GalleryPhotoViewWrapper> {
         [
           imgFile.path,
         ],
-        sharePositionOrigin: Rect.fromLTWH(0, 0, size.width, size.height / 4),
+        // sharePositionOrigin: Rect.fromLTWH(0, 0, size.width, size.height / 4),
       );
     }
   }
@@ -270,8 +270,12 @@ class _GalleryPhotoViewWrapperState extends State<GalleryPhotoViewWrapper> {
           if (file == null) {
             return Container();
           }
-          return InkWell(
-            onTap: () {
+          return PhotoView(
+            imageProvider: FileImage(file),
+            initialScale: PhotoViewComputedScale.contained,
+            minScale: PhotoViewComputedScale.contained,
+            maxScale: PhotoViewComputedScale.covered * 4,
+            onTapDown: (context, details, controllerValue) {
               setState(() {
                 showButton = !showButton;
                 if (showButton) {
@@ -283,32 +287,7 @@ class _GalleryPhotoViewWrapperState extends State<GalleryPhotoViewWrapper> {
                 }
               });
             },
-            child: PhotoView(
-              imageProvider: FileImage(file),
-              initialScale: PhotoViewComputedScale.contained,
-              minScale: PhotoViewComputedScale.contained,
-              maxScale: PhotoViewComputedScale.covered * 4,
-            ),
           );
-          // return PhotoView(
-          //   imageProvider: FileImage(file),
-          //   initialScale: PhotoViewComputedScale.contained,
-          //   minScale: PhotoViewComputedScale.contained,
-          //   maxScale: PhotoViewComputedScale.covered * 4,
-          //   onTapDown: (context, details, controllerValue) {
-          //     setState(() {
-          //       showButton = !showButton;
-          //       if (showButton) {
-          //         SystemChrome.setEnabledSystemUIMode(SystemUiMode.manual,
-          //             overlays: [SystemUiOverlay.bottom, SystemUiOverlay.top]);
-          //       } else {
-          //         SystemChrome.setEnabledSystemUIMode(SystemUiMode.manual,
-          //             overlays: []);
-          //       }
-          //     });
-          //     print("tap2");
-          //   },
-          // );
         },
       ),
     );
@@ -316,8 +295,10 @@ class _GalleryPhotoViewWrapperState extends State<GalleryPhotoViewWrapper> {
 
   @override
   void dispose() {
-    SystemChrome.setEnabledSystemUIMode(SystemUiMode.manual,
-        overlays: [SystemUiOverlay.bottom, SystemUiOverlay.top]);
+    SystemChrome.setEnabledSystemUIMode(
+      SystemUiMode.manual,
+      overlays: [SystemUiOverlay.bottom, SystemUiOverlay.top],
+    );
     super.dispose();
   }
 }
