@@ -22,7 +22,6 @@ Future<void> main() async {
   // for open onBoarding page one time
   SharedPreferences preferences = await SharedPreferences.getInstance();
   initScreen = preferences.getInt("initScreen");
-  await preferences.setInt("initScreen", 1);
 
   runApp(const MyApp());
 }

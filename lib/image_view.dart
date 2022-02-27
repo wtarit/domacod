@@ -9,6 +9,7 @@ import 'dart:io';
 import 'utils/path_utils.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:provider/provider.dart';
+import 'package:flutter/foundation.dart';
 
 class GalleryPhotoViewWrapper extends StatefulWidget {
   GalleryPhotoViewWrapper({
@@ -38,12 +39,20 @@ class _GalleryPhotoViewWrapperState extends State<GalleryPhotoViewWrapper> {
     final Size size = MediaQuery.of(context).size;
     File? imgFile = await widget.assets[currentIndex].file;
     if (imgFile != null) {
-      Share.shareFiles(
-        [
-          imgFile.path,
-        ],
-        // sharePositionOrigin: Rect.fromLTWH(0, 0, size.width, size.height / 4),
-      );
+      if (defaultTargetPlatform == TargetPlatform.iOS) {
+        Share.shareFiles(
+          [
+            imgFile.path,
+          ],
+          sharePositionOrigin: Rect.fromLTWH(0, 0, size.width, size.height / 4),
+        );
+      } else {
+        Share.shareFiles(
+          [
+            imgFile.path,
+          ],
+        );
+      }
     }
   }
 
