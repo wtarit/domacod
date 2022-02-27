@@ -1,4 +1,3 @@
-import 'package:domacod/grid_image_view.dart';
 import 'package:domacod/objectbox.g.dart';
 import 'package:domacod/screen/disclaimer.dart';
 import 'package:domacod/screen/settings.dart';
@@ -83,13 +82,8 @@ class _MainPageState extends State<MainPage> {
   void initState() {
     context.read<DatabaseProvider>().addDBtoProvider(widget.assetsBox);
     controller = FloatingSearchBarController();
-    _prefs.then((SharedPreferences prefs) async {
-      setState(() {
-        useOCR = prefs.getBool('useOCR') ?? true;
-      });
-    });
     _requestPermission()
-        .then((value) => context.read<DatabaseProvider>().indexImages());
+        .then((value) => context.read<DatabaseProvider>().indexImages(_prefs));
     super.initState();
   }
 

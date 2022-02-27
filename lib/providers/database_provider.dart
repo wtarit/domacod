@@ -1,6 +1,5 @@
 import 'package:domacod/image_data_models.dart';
 import 'package:domacod/objectbox.g.dart';
-import 'package:flutter/material.dart';
 import 'package:photo_manager/photo_manager.dart';
 import 'package:domacod/utils/http_ocr_utils.dart';
 import 'dart:isolate';
@@ -12,6 +11,8 @@ import 'package:flutter_image_compress/flutter_image_compress.dart';
 import 'package:path/path.dart' as p;
 import 'package:image/image.dart' as image_lib;
 import 'dart:io';
+import 'package:flutter/foundation.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class DatabaseProvider extends ChangeNotifier {
   List<AssetEntity> assets = [];
@@ -20,6 +21,7 @@ class DatabaseProvider extends ChangeNotifier {
   IsolateUtils isolateUtils = IsolateUtils();
   bool busy = true;
   int processed = 0;
+  bool useOCR = true;
 
   DatabaseProvider();
 
@@ -40,6 +42,42 @@ class DatabaseProvider extends ChangeNotifier {
         end: recentAlbum.assetCount, // end at max number of assets
       );
     }
+    PhotoManager.addChangeCallback(changeNotify);
+    PhotoManager.startChangeNotify();
+  }
+
+  void changeNotify(value) async {
+    if (defaultTargetPlatform == TargetPlatform.android) {
+      Map<String, dynamic> data = Map<String, dynamic>.from(value.arguments);
+      if (data["type"] == "insert") {
+        if (!assets.map((e) => e.id).contains(data["id"].toString())) {
+          final asset = await AssetEntity.fromId(data["id"].toString());
+          if (asset != null) {
+            assets.add(asset);
+          }
+        }
+      } else if (data["type"] == "delete") {
+        assets.removeWhere((element) => element.id == data["id"].toString());
+      }
+    } else if (defaultTargetPlatform == TargetPlatform.iOS) {
+      Map<String, dynamic> data = Map<String, dynamic>.from(value.arguments);
+      if (data["create"].length >= 1) {
+        for (var id in data["create"]) {
+          if (!assets.map((e) => e.id).contains(id["id"])) {
+            final asset = await AssetEntity.fromId(id["id"]);
+            if (asset != null) {
+              assets.add(asset);
+            }
+          }
+        }
+      } else if (data["delete"].length >= 1) {
+        for (var id in data["delete"]) {
+          assets.removeWhere((element) => element.id == id["id"]);
+        }
+      }
+    }
+    print("ioschange");
+    addDB();
   }
 
   // Runs inference in another isolate
@@ -83,16 +121,12 @@ class DatabaseProvider extends ChangeNotifier {
   }
 
   Future<void> addDB() async {
-    List<String> newIDs = [];
     Query<ImageData> queryIDs = assetsBox.query().build();
     List<String> dbIDs = queryIDs.property(ImageData_.imageID).find();
-    for (AssetEntity asset in assets) {
-      newIDs.add(asset.id);
-    }
 
     // Loop over database to see which image is deleted.
     for (int i = 0; i < dbIDs.length; i++) {
-      if (!newIDs.contains(dbIDs[i])) {
+      if (!assets[i].id.contains(dbIDs[i])) {
         Query<ImageData> queryDBIDs =
             assetsBox.query(ImageData_.imageID.equals(dbIDs[i])).build();
         ImageData? toremove = queryDBIDs.findFirst();
@@ -113,8 +147,7 @@ class DatabaseProvider extends ChangeNotifier {
         List<String> objdetectionResult = await inference(imgFile);
         if (objdetectionResult.isNotEmpty) {
           String mainCategory = objdetectionResult[0];
-          // if (mainCategory == "Document" && useOCR) {
-          if (mainCategory == "Document") {
+          if (mainCategory == "Document" && useOCR) {
             requestOcr(imgFile).then((data) {
               ImageData writeToDB = ImageData(
                 imageID: asset.id,
@@ -151,7 +184,9 @@ class DatabaseProvider extends ChangeNotifier {
     }
   }
 
-  void indexImages() async {
+  void indexImages(Future<SharedPreferences> _prefs) async {
+    SharedPreferences prefs = await _prefs;
+    useOCR = prefs.getBool('useOCR') ?? true;
     await _fetchAssets();
     print("DEBUG: fetched assets ${assets.length}");
     await classifier.load();
