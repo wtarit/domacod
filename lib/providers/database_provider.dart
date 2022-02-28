@@ -22,6 +22,7 @@ class DatabaseProvider extends ChangeNotifier {
   bool busy = true;
   int processed = 0;
   bool useOCR = true;
+  bool _reindex = true;
 
   DatabaseProvider();
 
@@ -36,17 +37,23 @@ class DatabaseProvider extends ChangeNotifier {
         type: RequestType.image, onlyAll: true);
     if (albums.isNotEmpty) {
       final recentAlbum = albums.first;
-      // Now that we got the album, fetch all the assets it contains
-      assets = await recentAlbum.getAssetListRange(
-        start: 0, // start at index 0
-        end: recentAlbum.assetCount, // end at max number of assets
-      );
+      if (recentAlbum.assetCount != 0) {
+        // Now that we got the album, fetch all the assets it contains
+        assets = await recentAlbum.getAssetListRange(
+          start: 0, // start at index 0
+          end: recentAlbum.assetCount, // end at max number of assets
+        );
+      }
     }
-    PhotoManager.addChangeCallback(changeNotify);
-    PhotoManager.startChangeNotify();
+    // PhotoManager.addChangeCallback(changeNotify);
+    // PhotoManager.startChangeNotify();
   }
 
   void changeNotify(value) async {
+    if (busy) {
+      _reindex = true;
+      return;
+    }
     if (defaultTargetPlatform == TargetPlatform.android) {
       Map<String, dynamic> data = Map<String, dynamic>.from(value.arguments);
       if (data["type"] == "insert") {
@@ -121,6 +128,7 @@ class DatabaseProvider extends ChangeNotifier {
   }
 
   Future<void> addDB() async {
+    busy = true;
     Query<ImageData> queryIDs = assetsBox.query().build();
     List<String> dbIDs = queryIDs.property(ImageData_.imageID).find();
 
@@ -145,33 +153,25 @@ class DatabaseProvider extends ChangeNotifier {
           continue;
         }
         List<String> objdetectionResult = await inference(imgFile);
+        String mainCategory = "";
         if (objdetectionResult.isNotEmpty) {
-          String mainCategory = objdetectionResult[0];
-          if (mainCategory == "Document" && useOCR) {
-            requestOcr(imgFile).then((data) {
-              ImageData writeToDB = ImageData(
-                imageID: asset.id,
-                mainCategory: mainCategory,
-                category: objdetectionResult,
-                text: data["text"],
-                doneOCR: data["complete"],
-              );
-              addImage(writeToDB);
-            });
-          } else {
+          mainCategory = objdetectionResult[0];
+        }
+        if (mainCategory == "Document" && useOCR) {
+          requestOcr(imgFile).then((data) {
             ImageData writeToDB = ImageData(
               imageID: asset.id,
               mainCategory: mainCategory,
               category: objdetectionResult,
-              text: "",
-              doneOCR: false,
+              text: data["text"],
+              doneOCR: data["complete"],
             );
             addImage(writeToDB);
-          }
+          });
         } else {
           ImageData writeToDB = ImageData(
             imageID: asset.id,
-            mainCategory: "",
+            mainCategory: mainCategory,
             category: objdetectionResult,
             text: "",
             doneOCR: false,
@@ -187,11 +187,13 @@ class DatabaseProvider extends ChangeNotifier {
   void indexImages(Future<SharedPreferences> _prefs) async {
     SharedPreferences prefs = await _prefs;
     useOCR = prefs.getBool('useOCR') ?? true;
-    await _fetchAssets();
-    print("DEBUG: fetched assets ${assets.length}");
     await classifier.load();
     await isolateUtils.start();
-    await addDB();
+    while (_reindex) {
+      _reindex = false;
+      await _fetchAssets();
+      await addDB();
+    }
     busy = false;
     notifyListeners();
   }
@@ -233,6 +235,7 @@ class DatabaseProvider extends ChangeNotifier {
       "Bicycle",
       "Motorcycle",
       "Airplane",
+      "Tree",
     ];
     for (String category in categories) {
       if (category == "Recent") {

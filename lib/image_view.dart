@@ -6,7 +6,6 @@ import 'package:photo_view/photo_view.dart';
 import 'package:photo_view/photo_view_gallery.dart';
 
 import 'dart:io';
-import 'utils/path_utils.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:provider/provider.dart';
 import 'package:flutter/foundation.dart';
@@ -81,7 +80,14 @@ class _GalleryPhotoViewWrapperState extends State<GalleryPhotoViewWrapper> {
     });
   }
 
-  Widget? _showBottomSheet() {
+  TextStyle detailTextStyle = const TextStyle(
+    color: Colors.white70,
+    fontSize: 14,
+    fontWeight: FontWeight.w500,
+    height: 3,
+  );
+
+  void _showBottomSheet() async {
     AssetEntity currentAsset = widget.assets[currentIndex];
     List<String> categories =
         context.read<DatabaseProvider>().queryCategory(currentAsset.id);
@@ -96,6 +102,7 @@ class _GalleryPhotoViewWrapperState extends State<GalleryPhotoViewWrapper> {
     } else {
       categoryDisplay += "Coming Soon...";
     }
+    String title = await currentAsset.titleAsync;
     showModalBottomSheet(
         context: context,
         backgroundColor: Colors.transparent,
@@ -107,103 +114,69 @@ class _GalleryPhotoViewWrapperState extends State<GalleryPhotoViewWrapper> {
                   topLeft: Radius.circular(25), topRight: Radius.circular(25)),
               color: Colors.black,
             ),
-            child: ListView(
-              //crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                RichText(
-                  text: TextSpan(
-                    children: [
-                      const WidgetSpan(
-                        child: Icon(Icons.photo_outlined,
-                            color: Colors.white60, size: 20),
-                      ),
-                      TextSpan(
-                        text:
-                            "   ${getAbsolutePath(null, widget.assets[currentIndex].title)}\n",
-                        style: const TextStyle(
-                            color: Colors.white70,
-                            fontSize: 14,
-                            fontWeight: FontWeight.w500,
-                            height: 3),
-                      ),
-                      const WidgetSpan(
-                        child: Icon(Icons.folder_open_rounded,
-                            color: Colors.white60, size: 20),
-                      ),
-                      TextSpan(
-                        text:
-                            "   ${getAbsolutePath(widget.assets[currentIndex].relativePath, null)}\n",
-                        style: const TextStyle(
-                          color: Colors.white70,
-                          fontSize: 14,
-                          fontWeight: FontWeight.w500,
-                          height: 3,
-                        ),
-                      ),
-                      const WidgetSpan(
-                        child: Icon(Icons.photo_size_select_large_rounded,
-                            color: Colors.white60, size: 20),
-                      ),
-                      TextSpan(
-                        text:
-                            "   ${widget.assets[currentIndex].width} X ${widget.assets[currentIndex].height}\n",
-                        style: const TextStyle(
-                          color: Colors.white70,
-                          fontSize: 14,
-                          fontWeight: FontWeight.w500,
-                          height: 3,
-                        ),
-                      ),
-                      const WidgetSpan(
-                        child: Icon(Icons.access_time_rounded,
-                            color: Colors.white60, size: 20),
-                      ),
-                      TextSpan(
-                        text:
-                            "   ${widget.assets[currentIndex].createDateTime}\n",
-                        style: const TextStyle(
-                          color: Colors.white70,
-                          fontSize: 14,
-                          fontWeight: FontWeight.w500,
-                          height: 3,
-                        ),
-                      ),
-                      // If latitude and longitude is 0, it means that no positioning information was obtained. And don't show this part.
-                      widget.assets[currentIndex].latitude != 0.0
-                          ? const WidgetSpan(
-                              child: Icon(Icons.location_on_outlined,
-                                  color: Colors.white60, size: 20),
-                            )
-                          : const TextSpan(),
-                      widget.assets[currentIndex].latitude != 0.0
-                          ? TextSpan(
-                              text:
-                                  "   ${widget.assets[currentIndex].latitude} X ${widget.assets[currentIndex].longitude}\n",
-                              style: const TextStyle(
-                                color: Colors.white70,
-                                fontSize: 14,
-                                fontWeight: FontWeight.w500,
-                                height: 3,
-                              ),
-                            )
-                          : const TextSpan(),
-                      const WidgetSpan(
-                        child: Icon(Icons.tag_rounded,
-                            color: Colors.white60, size: 20),
-                      ),
-                      TextSpan(
-                        text: categoryDisplay,
-                        style: TextStyle(
-                          color: Colors.white70,
-                          fontSize: 14,
-                          fontWeight: FontWeight.w500,
-                          height: 3,
-                        ),
-                      ),
-                    ],
+            child: RichText(
+              text: TextSpan(
+                children: [
+                  const WidgetSpan(
+                    child: Icon(Icons.photo_outlined,
+                        color: Colors.white60, size: 20),
                   ),
-                ),
-              ],
+                  TextSpan(
+                    text: "   $title\n",
+                    style: detailTextStyle,
+                  ),
+                  currentAsset.relativePath != null
+                      ? const WidgetSpan(
+                          child: Icon(Icons.folder_open_rounded,
+                              color: Colors.white60, size: 20),
+                        )
+                      : const TextSpan(),
+                  currentAsset.relativePath != null
+                      ? TextSpan(
+                          text: "   ${currentAsset.relativePath}\n",
+                          style: detailTextStyle,
+                        )
+                      : const TextSpan(),
+                  const WidgetSpan(
+                    child: Icon(Icons.photo_size_select_large_rounded,
+                        color: Colors.white60, size: 20),
+                  ),
+                  TextSpan(
+                    text: "   ${currentAsset.width} X ${currentAsset.height}\n",
+                    style: detailTextStyle,
+                  ),
+                  const WidgetSpan(
+                    child: Icon(Icons.access_time_rounded,
+                        color: Colors.white60, size: 20),
+                  ),
+                  TextSpan(
+                    text: "   ${currentAsset.createDateTime}\n",
+                    style: detailTextStyle,
+                  ),
+                  // If latitude and longitude is 0, it means that no positioning information was obtained. And don't show this part.
+                  currentAsset.latitude != 0.0
+                      ? const WidgetSpan(
+                          child: Icon(Icons.location_on_outlined,
+                              color: Colors.white60, size: 20),
+                        )
+                      : const TextSpan(),
+                  currentAsset.latitude != 0.0
+                      ? TextSpan(
+                          text:
+                              "   ${currentAsset.latitude} X ${currentAsset.longitude}\n",
+                          style: detailTextStyle,
+                        )
+                      : const TextSpan(),
+                  const WidgetSpan(
+                    child: Icon(Icons.tag_rounded,
+                        color: Colors.white60, size: 20),
+                  ),
+                  TextSpan(
+                    text: categoryDisplay,
+                    style: detailTextStyle,
+                  ),
+                ],
+              ),
             ),
           );
         });

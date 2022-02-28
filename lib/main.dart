@@ -59,4 +59,10 @@ class _MyAppState extends State<MyApp> {
       ),
     );
   }
+
+  @override
+  void dispose() {
+    objectbox.store.close();
+    super.dispose();
+  }
 }
