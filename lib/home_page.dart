@@ -11,6 +11,7 @@ import 'package:material_floating_search_bar/material_floating_search_bar.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:provider/provider.dart';
 import 'package:domacod/providers/database_provider.dart';
+import 'package:flutter/foundation.dart';
 
 class MainPage extends StatefulWidget {
   const MainPage({Key? key, required this.assetsBox}) : super(key: key);
@@ -25,7 +26,6 @@ class _MainPageState extends State<MainPage> {
   late double screenHeight = MediaQuery.of(context).size.height;
 
   final Future<SharedPreferences> _prefs = SharedPreferences.getInstance();
-  bool useOCR = true;
   Future<void> _showPermissionDialog() async {
     return showDialog<void>(
       context: context,
@@ -44,14 +44,16 @@ class _MainPageState extends State<MainPage> {
             ),
           ),
           actions: <Widget>[
-            TextButton(
-              child: const Text('Quit App'),
-              onPressed: () {
-                // Navigator.of(context).pop();
-                SystemChannels.platform
-                    .invokeMethod<void>('SystemNavigator.pop');
-              },
-            ),
+            defaultTargetPlatform != TargetPlatform.iOS
+                ? TextButton(
+                    child: const Text('Quit App'),
+                    onPressed: () {
+                      // Navigator.of(context).pop();
+                      SystemChannels.platform
+                          .invokeMethod<void>('SystemNavigator.pop');
+                    },
+                  )
+                : Container(),
             TextButton(
               child: const Text('Open Settings'),
               onPressed: () async {
@@ -73,8 +75,14 @@ class _MainPageState extends State<MainPage> {
 
   Future<void> _requestPermission() async {
     var result = await PhotoManager.requestPermissionExtend();
-    if (!result.isAuth) {
-      await _showPermissionDialog();
+    if (defaultTargetPlatform == TargetPlatform.android) {
+      if (!result.isAuth) {
+        await _showPermissionDialog();
+      }
+    } else {
+      if (result.index == 2) {
+        await _showPermissionDialog();
+      }
     }
   }
 

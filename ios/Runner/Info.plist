@@ -25,9 +25,9 @@
 	<key>LSRequiresIPhoneOS</key>
 	<true/>
 	<key>NSPhotoLibraryUsageDescription</key>
-	<string>Domacod need access to your photos.</string>
+	<string>Domacod needs access to your photos to index and categorize your images.</string>
 	<key>NSCameraUsageDescription</key>
-	<string>This is not necessary.</string>
+	<string>Domacod needs access to your camera to take images.</string>
 	<key>UILaunchStoryboardName</key>
 	<string>LaunchScreen</string>
 	<key>UIMainStoryboardFile</key>
