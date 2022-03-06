@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:photo_manager/photo_manager.dart';
 import 'package:domacod/objectbox.g.dart';
 import 'image_data_models.dart';
-import 'utils/path_utils.dart';
 import 'widgets/thumbnail_view.dart';
 import 'providers/database_provider.dart';
 import 'package:provider/provider.dart';
@@ -10,11 +9,9 @@ import 'package:provider/provider.dart';
 class SearchResultView extends StatefulWidget {
   const SearchResultView({
     Key? key,
-    required this.assets,
     required this.query,
   }) : super(key: key);
   final String query;
-  final List<AssetEntity> assets;
 
   @override
   _SearchResultViewState createState() => _SearchResultViewState();
@@ -24,14 +21,12 @@ class _SearchResultViewState extends State<SearchResultView> {
   List<AssetEntity> toShow = [];
   void fetchImageToShow() {
     Box<ImageData> assetsBox = context.watch<DatabaseProvider>().getDB;
+    List<AssetEntity> assets = context.watch<DatabaseProvider>().assets;
     Query<ImageData> query = assetsBox
         .query(ImageData_.text.contains(widget.query, caseSensitive: false))
         .build();
-    List<String> filename = query.property(ImageData_.imagePath).find();
-    toShow = widget.assets
-        .where(
-            (e) => filename.contains(getAbsolutePath(e.relativePath, e.title)))
-        .toList();
+    List<String> toShowIDs = query.property(ImageData_.imageID).find();
+    toShow = assets.where((e) => toShowIDs.contains(e.id)).toList();
   }
 
   @override

@@ -3,14 +3,14 @@ import 'package:objectbox/objectbox.dart';
 @Entity()
 class ImageData {
   int id;
-  String imagePath;
+  String imageID;
   String mainCategory;
   List<String> category;
   String text;
   bool doneOCR;
   ImageData({
     this.id = 0,
-    required this.imagePath,
+    required this.imageID,
     required this.mainCategory,
     required this.category,
     required this.text,

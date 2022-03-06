@@ -6,9 +6,9 @@ import 'package:photo_view/photo_view.dart';
 import 'package:photo_view/photo_view_gallery.dart';
 
 import 'dart:io';
-import 'utils/path_utils.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:provider/provider.dart';
+import 'package:flutter/foundation.dart';
 
 class GalleryPhotoViewWrapper extends StatefulWidget {
   GalleryPhotoViewWrapper({
@@ -34,24 +34,35 @@ class _GalleryPhotoViewWrapperState extends State<GalleryPhotoViewWrapper> {
     super.initState();
   }
 
-  void shareImage() {
-    Share.shareFiles([
-      getAbsolutePath(widget.assets[currentIndex].relativePath,
-          widget.assets[currentIndex].title)
-    ]);
+  void shareImage() async {
+    final Size size = MediaQuery.of(context).size;
+    File? imgFile = await widget.assets[currentIndex].file;
+    if (imgFile != null) {
+      if (defaultTargetPlatform == TargetPlatform.iOS) {
+        Share.shareFiles(
+          [
+            imgFile.path,
+          ],
+          sharePositionOrigin: Rect.fromLTWH(0, 0, size.width, size.height / 4),
+        );
+      } else {
+        Share.shareFiles(
+          [
+            imgFile.path,
+          ],
+        );
+      }
+    }
   }
 
   void _showDeleteConfirmation() async {
-    String deletePath = getAbsolutePath(
-        widget.assets[currentIndex].relativePath,
-        widget.assets[currentIndex].title);
     String deleteID = widget.assets[currentIndex].id;
     final List<String> result = await PhotoManager.editor.deleteWithIds([
       deleteID,
     ]);
     widget.assets.removeWhere((element) => element.id == deleteID);
     if (result.isNotEmpty) {
-      context.read<DatabaseProvider>().deleteDBbyPath(deletePath);
+      context.read<DatabaseProvider>().deleteDBbyID(deleteID);
       if (widget.assets.isEmpty) {
         Navigator.pop(context);
       }
@@ -69,10 +80,17 @@ class _GalleryPhotoViewWrapperState extends State<GalleryPhotoViewWrapper> {
     });
   }
 
-  Widget? _showBottomSheet() {
+  TextStyle detailTextStyle = const TextStyle(
+    color: Colors.white70,
+    fontSize: 14,
+    fontWeight: FontWeight.w500,
+    height: 3,
+  );
+
+  void _showBottomSheet() async {
     AssetEntity currentAsset = widget.assets[currentIndex];
-    List<String> categories = context.read<DatabaseProvider>().queryCategory(
-        getAbsolutePath(currentAsset.relativePath, currentAsset.title));
+    List<String> categories =
+        context.read<DatabaseProvider>().queryCategory(currentAsset.id);
     String categoryDisplay = "  ";
     if (categories.isNotEmpty) {
       for (int i = 0; i < categories.length; i++) {
@@ -84,6 +102,7 @@ class _GalleryPhotoViewWrapperState extends State<GalleryPhotoViewWrapper> {
     } else {
       categoryDisplay += "Coming Soon...";
     }
+    String title = await currentAsset.titleAsync;
     showModalBottomSheet(
         context: context,
         backgroundColor: Colors.transparent,
@@ -95,103 +114,69 @@ class _GalleryPhotoViewWrapperState extends State<GalleryPhotoViewWrapper> {
                   topLeft: Radius.circular(25), topRight: Radius.circular(25)),
               color: Colors.black,
             ),
-            child: ListView(
-              //crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                RichText(
-                  text: TextSpan(
-                    children: [
-                      const WidgetSpan(
-                        child: Icon(Icons.photo_outlined,
-                            color: Colors.white60, size: 20),
-                      ),
-                      TextSpan(
-                        text:
-                            "   ${getAbsolutePath(null, widget.assets[currentIndex].title)}\n",
-                        style: const TextStyle(
-                            color: Colors.white70,
-                            fontSize: 14,
-                            fontWeight: FontWeight.w500,
-                            height: 3),
-                      ),
-                      const WidgetSpan(
-                        child: Icon(Icons.folder_open_rounded,
-                            color: Colors.white60, size: 20),
-                      ),
-                      TextSpan(
-                        text:
-                            "   ${getAbsolutePath(widget.assets[currentIndex].relativePath, null)}\n",
-                        style: const TextStyle(
-                          color: Colors.white70,
-                          fontSize: 14,
-                          fontWeight: FontWeight.w500,
-                          height: 3,
-                        ),
-                      ),
-                      const WidgetSpan(
-                        child: Icon(Icons.photo_size_select_large_rounded,
-                            color: Colors.white60, size: 20),
-                      ),
-                      TextSpan(
-                        text:
-                            "   ${widget.assets[currentIndex].width} X ${widget.assets[currentIndex].height}\n",
-                        style: const TextStyle(
-                          color: Colors.white70,
-                          fontSize: 14,
-                          fontWeight: FontWeight.w500,
-                          height: 3,
-                        ),
-                      ),
-                      const WidgetSpan(
-                        child: Icon(Icons.access_time_rounded,
-                            color: Colors.white60, size: 20),
-                      ),
-                      TextSpan(
-                        text:
-                            "   ${widget.assets[currentIndex].createDateTime}\n",
-                        style: const TextStyle(
-                          color: Colors.white70,
-                          fontSize: 14,
-                          fontWeight: FontWeight.w500,
-                          height: 3,
-                        ),
-                      ),
-                      // If latitude and longitude is 0, it means that no positioning information was obtained. And don't show this part.
-                      widget.assets[currentIndex].latitude != 0.0
-                          ? const WidgetSpan(
-                              child: Icon(Icons.location_on_outlined,
-                                  color: Colors.white60, size: 20),
-                            )
-                          : const TextSpan(),
-                      widget.assets[currentIndex].latitude != 0.0
-                          ? TextSpan(
-                              text:
-                                  "   ${widget.assets[currentIndex].latitude} X ${widget.assets[currentIndex].longitude}\n",
-                              style: const TextStyle(
-                                color: Colors.white70,
-                                fontSize: 14,
-                                fontWeight: FontWeight.w500,
-                                height: 3,
-                              ),
-                            )
-                          : const TextSpan(),
-                      const WidgetSpan(
-                        child: Icon(Icons.tag_rounded,
-                            color: Colors.white60, size: 20),
-                      ),
-                      TextSpan(
-                        text: categoryDisplay,
-                        style: TextStyle(
-                          color: Colors.white70,
-                          fontSize: 14,
-                          fontWeight: FontWeight.w500,
-                          height: 3,
-                        ),
-                      ),
-                    ],
+            child: RichText(
+              text: TextSpan(
+                children: [
+                  const WidgetSpan(
+                    child: Icon(Icons.photo_outlined,
+                        color: Colors.white60, size: 20),
                   ),
-                ),
-              ],
+                  TextSpan(
+                    text: "   $title\n",
+                    style: detailTextStyle,
+                  ),
+                  currentAsset.relativePath != null
+                      ? const WidgetSpan(
+                          child: Icon(Icons.folder_open_rounded,
+                              color: Colors.white60, size: 20),
+                        )
+                      : const TextSpan(),
+                  currentAsset.relativePath != null
+                      ? TextSpan(
+                          text: "   ${currentAsset.relativePath}\n",
+                          style: detailTextStyle,
+                        )
+                      : const TextSpan(),
+                  const WidgetSpan(
+                    child: Icon(Icons.photo_size_select_large_rounded,
+                        color: Colors.white60, size: 20),
+                  ),
+                  TextSpan(
+                    text: "   ${currentAsset.width} X ${currentAsset.height}\n",
+                    style: detailTextStyle,
+                  ),
+                  const WidgetSpan(
+                    child: Icon(Icons.access_time_rounded,
+                        color: Colors.white60, size: 20),
+                  ),
+                  TextSpan(
+                    text: "   ${currentAsset.createDateTime}\n",
+                    style: detailTextStyle,
+                  ),
+                  // If latitude and longitude is 0, it means that no positioning information was obtained. And don't show this part.
+                  currentAsset.latitude != 0.0
+                      ? const WidgetSpan(
+                          child: Icon(Icons.location_on_outlined,
+                              color: Colors.white60, size: 20),
+                        )
+                      : const TextSpan(),
+                  currentAsset.latitude != 0.0
+                      ? TextSpan(
+                          text:
+                              "   ${currentAsset.latitude} X ${currentAsset.longitude}\n",
+                          style: detailTextStyle,
+                        )
+                      : const TextSpan(),
+                  const WidgetSpan(
+                    child: Icon(Icons.tag_rounded,
+                        color: Colors.white60, size: 20),
+                  ),
+                  TextSpan(
+                    text: categoryDisplay,
+                    style: detailTextStyle,
+                  ),
+                ],
+              ),
             ),
           );
         });
@@ -267,8 +252,12 @@ class _GalleryPhotoViewWrapperState extends State<GalleryPhotoViewWrapper> {
           if (file == null) {
             return Container();
           }
-          return InkWell(
-            onTap: () {
+          return PhotoView(
+            imageProvider: FileImage(file),
+            initialScale: PhotoViewComputedScale.contained,
+            minScale: PhotoViewComputedScale.contained,
+            maxScale: PhotoViewComputedScale.covered * 4,
+            onTapDown: (context, details, controllerValue) {
               setState(() {
                 showButton = !showButton;
                 if (showButton) {
@@ -280,32 +269,7 @@ class _GalleryPhotoViewWrapperState extends State<GalleryPhotoViewWrapper> {
                 }
               });
             },
-            child: PhotoView(
-              imageProvider: FileImage(file),
-              initialScale: PhotoViewComputedScale.contained,
-              minScale: PhotoViewComputedScale.contained,
-              maxScale: PhotoViewComputedScale.covered * 4,
-            ),
           );
-          // return PhotoView(
-          //   imageProvider: FileImage(file),
-          //   initialScale: PhotoViewComputedScale.contained,
-          //   minScale: PhotoViewComputedScale.contained,
-          //   maxScale: PhotoViewComputedScale.covered * 4,
-          //   onTapDown: (context, details, controllerValue) {
-          //     setState(() {
-          //       showButton = !showButton;
-          //       if (showButton) {
-          //         SystemChrome.setEnabledSystemUIMode(SystemUiMode.manual,
-          //             overlays: [SystemUiOverlay.bottom, SystemUiOverlay.top]);
-          //       } else {
-          //         SystemChrome.setEnabledSystemUIMode(SystemUiMode.manual,
-          //             overlays: []);
-          //       }
-          //     });
-          //     print("tap2");
-          //   },
-          // );
         },
       ),
     );
@@ -313,8 +277,10 @@ class _GalleryPhotoViewWrapperState extends State<GalleryPhotoViewWrapper> {
 
   @override
   void dispose() {
-    SystemChrome.setEnabledSystemUIMode(SystemUiMode.manual,
-        overlays: [SystemUiOverlay.bottom, SystemUiOverlay.top]);
+    SystemChrome.setEnabledSystemUIMode(
+      SystemUiMode.manual,
+      overlays: [SystemUiOverlay.bottom, SystemUiOverlay.top],
+    );
     super.dispose();
   }
 }
