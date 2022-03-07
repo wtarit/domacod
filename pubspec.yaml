@@ -48,6 +48,7 @@ dependencies:
   shared_preferences: ^2.0.12
   settings_ui: ^2.0.1
   provider: ^6.0.2
+  sticky_headers: ^0.2.0
 
 dev_dependencies:
   flutter_test:

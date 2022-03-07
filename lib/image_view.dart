@@ -91,6 +91,8 @@ class _GalleryPhotoViewWrapperState extends State<GalleryPhotoViewWrapper> {
     AssetEntity currentAsset = widget.assets[currentIndex];
     List<String> categories =
         context.read<DatabaseProvider>().queryCategory(currentAsset.id);
+    String subject =
+        context.read<DatabaseProvider>().querySubject(currentAsset.id);
     String categoryDisplay = "  ";
     if (categories.isNotEmpty) {
       for (int i = 0; i < categories.length; i++) {
@@ -111,15 +113,20 @@ class _GalleryPhotoViewWrapperState extends State<GalleryPhotoViewWrapper> {
             padding: const EdgeInsets.all(20),
             decoration: const BoxDecoration(
               borderRadius: BorderRadius.only(
-                  topLeft: Radius.circular(25), topRight: Radius.circular(25)),
+                topLeft: Radius.circular(25),
+                topRight: Radius.circular(25),
+              ),
               color: Colors.black,
             ),
             child: RichText(
               text: TextSpan(
                 children: [
                   const WidgetSpan(
-                    child: Icon(Icons.photo_outlined,
-                        color: Colors.white60, size: 20),
+                    child: Icon(
+                      Icons.photo_outlined,
+                      color: Colors.white60,
+                      size: 20,
+                    ),
                   ),
                   TextSpan(
                     text: "   $title\n",
@@ -127,8 +134,11 @@ class _GalleryPhotoViewWrapperState extends State<GalleryPhotoViewWrapper> {
                   ),
                   currentAsset.relativePath != null
                       ? const WidgetSpan(
-                          child: Icon(Icons.folder_open_rounded,
-                              color: Colors.white60, size: 20),
+                          child: Icon(
+                            Icons.folder_open_rounded,
+                            color: Colors.white60,
+                            size: 20,
+                          ),
                         )
                       : const TextSpan(),
                   currentAsset.relativePath != null
@@ -138,16 +148,22 @@ class _GalleryPhotoViewWrapperState extends State<GalleryPhotoViewWrapper> {
                         )
                       : const TextSpan(),
                   const WidgetSpan(
-                    child: Icon(Icons.photo_size_select_large_rounded,
-                        color: Colors.white60, size: 20),
+                    child: Icon(
+                      Icons.photo_size_select_large_rounded,
+                      color: Colors.white60,
+                      size: 20,
+                    ),
                   ),
                   TextSpan(
                     text: "   ${currentAsset.width} X ${currentAsset.height}\n",
                     style: detailTextStyle,
                   ),
                   const WidgetSpan(
-                    child: Icon(Icons.access_time_rounded,
-                        color: Colors.white60, size: 20),
+                    child: Icon(
+                      Icons.access_time_rounded,
+                      color: Colors.white60,
+                      size: 20,
+                    ),
                   ),
                   TextSpan(
                     text: "   ${currentAsset.createDateTime}\n",
@@ -168,13 +184,31 @@ class _GalleryPhotoViewWrapperState extends State<GalleryPhotoViewWrapper> {
                         )
                       : const TextSpan(),
                   const WidgetSpan(
-                    child: Icon(Icons.tag_rounded,
-                        color: Colors.white60, size: 20),
+                    child: Icon(
+                      Icons.tag_rounded,
+                      color: Colors.white60,
+                      size: 20,
+                    ),
                   ),
                   TextSpan(
-                    text: categoryDisplay,
+                    text: "$categoryDisplay\n",
                     style: detailTextStyle,
                   ),
+                  subject.isNotEmpty
+                      ? const WidgetSpan(
+                          child: Icon(
+                            Icons.subject_outlined,
+                            color: Colors.white60,
+                            size: 20,
+                          ),
+                        )
+                      : const TextSpan(),
+                  subject.isNotEmpty
+                      ? TextSpan(
+                          text: "  $subject\n",
+                          style: detailTextStyle,
+                        )
+                      : const TextSpan(),
                 ],
               ),
             ),

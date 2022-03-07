@@ -8,6 +8,7 @@ class ImageData {
   List<String> category;
   String text;
   bool doneOCR;
+  String subject;
   ImageData({
     this.id = 0,
     required this.imageID,
@@ -15,5 +16,6 @@ class ImageData {
     required this.category,
     required this.text,
     required this.doneOCR,
+    required this.subject,
   });
 }

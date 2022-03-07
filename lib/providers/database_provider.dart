@@ -165,6 +165,7 @@ class DatabaseProvider extends ChangeNotifier {
               category: objdetectionResult,
               text: data["text"],
               doneOCR: data["complete"],
+              subject: data["subject"],
             );
             addImage(writeToDB);
           });
@@ -175,6 +176,7 @@ class DatabaseProvider extends ChangeNotifier {
             category: objdetectionResult,
             text: "",
             doneOCR: false,
+            subject: "",
           );
           addImage(writeToDB);
         }
@@ -218,6 +220,19 @@ class DatabaseProvider extends ChangeNotifier {
       return [];
     }
     return result.category.toSet().toList();
+  }
+
+  String querySubject(String imageID) {
+    Query<ImageData> query =
+        assetsBox.query(ImageData_.imageID.equals(imageID)).build();
+    ImageData? result = query.findFirst();
+    if (result == null) {
+      return "";
+    }
+    if (result.mainCategory != "Document") {
+      return "";
+    }
+    return result.subject;
   }
 
   List<ImageCategoryThumbnail> getThumbData() {

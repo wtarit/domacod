@@ -2,6 +2,7 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import '../providers/database_provider.dart';
 import '../grid_image_view.dart';
+import '../document_view.dart';
 
 class CategoryThumbnail extends StatelessWidget {
   const CategoryThumbnail({
@@ -22,14 +23,25 @@ class CategoryThumbnail extends StatelessWidget {
         // If there's data, display it as an image
         return InkWell(
           onTap: () {
-            Navigator.push(
-              context,
-              MaterialPageRoute(
-                builder: (context) => GridImageView(
-                  category: thumb.category,
+            if (thumb.category == "Document") {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => DocumentImageView(
+                    category: thumb.category,
+                  ),
                 ),
-              ),
-            );
+              );
+            } else {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => GridImageView(
+                    category: thumb.category,
+                  ),
+                ),
+              );
+            }
           },
           child: ClipRRect(
             borderRadius: const BorderRadius.all(Radius.circular(7)),
