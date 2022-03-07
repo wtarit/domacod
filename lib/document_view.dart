@@ -5,14 +5,11 @@ import 'package:photo_manager/photo_manager.dart';
 import 'package:provider/provider.dart';
 import 'image_data_models.dart';
 import 'widgets/thumbnail_view.dart';
-import 'package:sticky_headers/sticky_headers.dart';
 
 class DocumentImageView extends StatefulWidget {
   const DocumentImageView({
     Key? key,
-    required this.category,
   }) : super(key: key);
-  final String category;
 
   @override
   State<DocumentImageView> createState() => _DocumentImageViewState();
@@ -25,15 +22,19 @@ class _DocumentImageViewState extends State<DocumentImageView> {
   void fetchImageToShow() {
     Box<ImageData> assetsBox = context.watch<DatabaseProvider>().getDB;
     List<AssetEntity> assets = context.watch<DatabaseProvider>().assets;
-    if (widget.category == "Recent") {
-      toShow = assets;
+    Query<ImageData> query;
+    if (dropdownValue == "All subject") {
+      query = assetsBox.query(ImageData_.category.contains("Document")).build();
     } else {
-      Query<ImageData> query = assetsBox
-          .query(ImageData_.category.contains(widget.category))
+      query = assetsBox
+          .query(ImageData_.category
+              .contains("Document")
+              .and(ImageData_.subject.equals(dropdownValue)))
           .build();
-      List<String> toShowIDs = query.property(ImageData_.imageID).find();
-      toShow = assets.where((e) => toShowIDs.contains(e.id)).toList();
     }
+
+    List<String> toShowIDs = query.property(ImageData_.imageID).find();
+    toShow = assets.where((e) => toShowIDs.contains(e.id)).toList();
   }
 
   @override
@@ -41,7 +42,7 @@ class _DocumentImageViewState extends State<DocumentImageView> {
     fetchImageToShow();
     return Scaffold(
       appBar: AppBar(
-        title: Text(widget.category),
+        title: const Text("Document"),
       ),
       body: Column(
         children: [

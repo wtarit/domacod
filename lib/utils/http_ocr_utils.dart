@@ -5,7 +5,7 @@ import 'package:http/http.dart' as http;
 import 'package:flutter_image_compress/flutter_image_compress.dart';
 import 'dart:io';
 
-Future<Map<String, dynamic>> requestOcr(File imgFile) async {
+Future<PredictionResponse> requestOcr(File imgFile) async {
   Uint8List data = await FlutterImageCompress.compressWithList(
     await imgFile.readAsBytes(),
     minWidth: 1600,
@@ -22,18 +22,41 @@ Future<Map<String, dynamic>> requestOcr(File imgFile) async {
       .add(http.MultipartFile.fromBytes('file', data, filename: "img.jpg"));
   http.StreamedResponse response;
   try {
-    response = await request.send();
+    response = await request.send().timeout(const Duration(seconds: 100));
   } catch (e) {
-    return {"text": "", "complete": false};
+    return PredictionResponse(
+      text: "",
+      subject: "",
+      complete: false,
+    );
   }
 
   if (response.statusCode == 200) {
     String jsonString = await response.stream.bytesToString();
     Map<String, dynamic> json = jsonDecode(jsonString);
-    return {"text": json["text"], "subject": json["subject"], "complete": true};
+    return PredictionResponse(
+      text: json["text"],
+      subject: json["subject"],
+      complete: true,
+    );
   } else {
     print(
         "Not 200 response ${response.statusCode} ${response.reasonPhrase} ${await response.stream.bytesToString()}");
   }
-  return {"text": "", "complete": false};
+  return PredictionResponse(
+    text: "",
+    subject: "",
+    complete: false,
+  );
+}
+
+class PredictionResponse {
+  String text;
+  String subject;
+  bool complete;
+  PredictionResponse({
+    required this.text,
+    required this.subject,
+    required this.complete,
+  });
 }

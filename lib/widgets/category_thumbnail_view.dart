@@ -27,9 +27,7 @@ class CategoryThumbnail extends StatelessWidget {
               Navigator.push(
                 context,
                 MaterialPageRoute(
-                  builder: (context) => DocumentImageView(
-                    category: thumb.category,
-                  ),
+                  builder: (context) => const DocumentImageView(),
                 ),
               );
             } else {

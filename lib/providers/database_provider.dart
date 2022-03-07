@@ -163,9 +163,9 @@ class DatabaseProvider extends ChangeNotifier {
               imageID: asset.id,
               mainCategory: mainCategory,
               category: objdetectionResult,
-              text: data["text"],
-              doneOCR: data["complete"],
-              subject: data["subject"],
+              text: data.text,
+              doneOCR: data.complete,
+              subject: data.subject,
             );
             addImage(writeToDB);
           });
@@ -229,7 +229,7 @@ class DatabaseProvider extends ChangeNotifier {
     if (result == null) {
       return "";
     }
-    if (result.mainCategory != "Document") {
+    if (!result.category.contains("Document")) {
       return "";
     }
     return result.subject;
