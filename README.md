@@ -9,10 +9,10 @@ Domacod, an application to index images based on the content of the image. By us
 Domacod is available on Google Play and App Store. For Android you can also download apk directly on the [release section](https://github.com/wtarit/domacod/releases/tag/v1.0.2) of the app.  
 <p align="center">
   <a href="https://play.google.com/store/apps/details?id=com.domacod.domacod">
-    <img height="100" alt="Get it on Google Play" src="https://play.google.com/intl/en_us/badges/static/images/badges/en_badge_web_generic.png">
+    <img height="80" alt="Get it on Google Play" src="docs_img/google-play-badge.png">
   </a>
   <a href="https://apps.apple.com/app/domacod/id1611968233">
-    <img height="70" style="padding: 15px 15px 15px 15px;" alt="Get it on App Store" src="https://developer.apple.com/assets/elements/badges/download-on-the-app-store.svg">
+    <img height="80" alt="Get it on App Store" src="docs_img/appstore-badge.png">
   </a>
 </p>
 
