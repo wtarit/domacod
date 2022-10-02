@@ -48,3 +48,9 @@ app.*.map.json
 *.so
 **.g.dart
 assets/
+
+# backend
+.DS_Store
+__pycache__/
+domacod-ef1a05fe4585.json
+autonlp-4Subject-613017416/

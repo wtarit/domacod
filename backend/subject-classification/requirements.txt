@@ -1,0 +1,7 @@
+-f https://download.pytorch.org/whl/cpu/torch_stable.html
+torch==1.10.2+cpu
+transformers
+fastapi
+uvicorn[standard]
+python-multipart
+google-cloud-vision==2.6.3
